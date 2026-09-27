@@ -1,6 +1,8 @@
 import { k } from "./kaboomCtx";
 import { BAKERY_STATIONS, COLORS, CUPCAKE_STEPS, GAME_HEIGHT, GAME_WIDTH } from "./constants";
 import { clamp, createLabel, createPixelRect } from "./utils";
+import { NODES as CHAIN_LAB_NODES, createChainReactionLab } from "./chainReaction";
+import { isNarratorEnabled, narratorSupported, speak, toggleNarrator } from "./narrator";
 import backgroundMusicUrl from "../audio/maksymmalko-funny-cartoon-music-532611.mp3?url";
 import plopSoundUrl from "../audio/freesound_community-water-splash-80537.mp3?url";
 import bakingNoiseUrl from "../audio/danevaer-white-noise-434731.mp3?url";
@@ -26,6 +28,9 @@ const STORAGE_KEY = "tanvis-code-bakery-quest";
 const CHARACTER_KEY = "tanvis-code-bakery-character";
 const CUPCAKE_KEY = "tanvis-code-bakery-cupcake";
 const VOLUME_KEY = "tanvis-code-bakery-volume";
+const TEXT_SIZE_KEY = "tanvis-code-bakery-text-size";
+const TEXT_SIZES = ["normal", "large", "xlarge"];
+const TEXT_SIZE_LABELS = { normal: "100%", large: "115%", xlarge: "130%" };
 const QUIET_WHOOSH_VOLUME = 0.8;
 const INTERFACE_CLICK_SELECTOR = [
   ".dialog-close",
@@ -52,6 +57,13 @@ const INTERFACE_CLICK_SELECTOR = [
   "#quit-dialog button",
   "#volume-down",
   "#volume-up",
+  "#chain-lab-button",
+  "#chain-lab-reset",
+  "#chain-lab-stations button",
+  "#chain-lab-play-again",
+  "#completion-lab",
+  "#text-size-toggle",
+  "#narrator-toggle",
 ].join(",");
 const HOVER_CAPABLE = window.matchMedia("(hover: hover)");
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -266,6 +278,22 @@ const defaultCharacter = document.querySelector("#default-character");
 const saveCharacter = document.querySelector("#save-character");
 const avatarPreview = document.querySelector("#avatar-preview");
 const characterName = document.querySelector("#character-name");
+const chainLabButton = document.querySelector("#chain-lab-button");
+const chainLabDialog = document.querySelector("#chain-lab-dialog");
+const chainLabCanvas = document.querySelector("#chain-lab-canvas");
+const chainLabScore = document.querySelector("#chain-lab-score");
+const chainLabHighScore = document.querySelector("#chain-lab-highscore");
+const chainLabLog = document.querySelector("#chain-lab-log");
+const chainLabEndless = document.querySelector("#chain-lab-endless");
+const chainLabColorblind = document.querySelector("#chain-lab-colorblind");
+const chainLabReset = document.querySelector("#chain-lab-reset");
+const chainLabStations = document.querySelector("#chain-lab-stations");
+const chainLabGameOver = document.querySelector("#chain-lab-gameover");
+const chainLabGameOverDetail = document.querySelector("#chain-lab-gameover-detail");
+const chainLabPlayAgain = document.querySelector("#chain-lab-play-again");
+const completionLabButton = document.querySelector("#completion-lab");
+const textSizeToggle = document.querySelector("#text-size-toggle");
+const narratorToggle = document.querySelector("#narrator-toggle");
 
 let currentStepIndex = readSavedStep();
 let player = null;
@@ -594,9 +622,9 @@ function drawBakery() {
   k.add([k.rect(210, 50), k.color(k.Color.fromHex(COLORS.cream)), k.outline(3, k.Color.fromHex(COLORS.brown)), k.pos(bakerySign), k.anchor("center"), k.z(-12)]);
   k.add([k.rect(8, 8), k.color(k.Color.fromHex(COLORS.pink)), k.pos(bakerySign.add(k.vec2(-91, -14))), k.anchor("center"), k.z(-11)]);
   k.add([k.rect(8, 8), k.color(k.Color.fromHex(COLORS.pink)), k.pos(bakerySign.add(k.vec2(91, 14))), k.anchor("center"), k.z(-11)]);
-  createLabel(k, "TANVI'S", bakerySign.add(k.vec2(0, -12)), { size: 9, color: COLORS.red });
-  createLabel(k, "PORTFOLIO BAKERY", bakerySign.add(k.vec2(0, 8)), { size: 16, color: COLORS.cocoa });
-  createLabel(k, "CLICK TO WALK AROUND  |  BAKE TO EXPLORE", k.vec2(GAME_WIDTH / 2, 140), { size: 10, color: COLORS.red });
+  createLabel(k, "CHAIN REACTION", bakerySign.add(k.vec2(0, -12)), { size: 9, color: COLORS.red });
+  createLabel(k, "BAKERY", bakerySign.add(k.vec2(0, 8)), { size: 16, color: COLORS.cocoa });
+  createLabel(k, "CLICK TO WALK AROUND  |  KEEP THE CHAIN GOING", k.vec2(GAME_WIDTH / 2, 140), { size: 10, color: COLORS.red });
 
   const stations = [
     ["cafeTable", COLORS.sage, "#dce5d1"],
@@ -903,21 +931,27 @@ function addPlayer() {
   return player;
 }
 
+let announcedStepIndex = null;
+
 function renderProgress() {
   const step = CUPCAKE_STEPS[currentStepIndex];
+  if (step && announcedStepIndex !== null && announcedStepIndex !== currentStepIndex) {
+    speak(`Next link: ${step.questLabel}. ${step.instruction}`);
+  }
+  announcedStepIndex = currentStepIndex;
   const stepNumber = Math.min(currentStepIndex + 1, CUPCAKE_STEPS.length);
   questCount.textContent = currentStepIndex >= CUPCAKE_STEPS.length ? "Complete" : `Step ${stepNumber} of ${CUPCAKE_STEPS.length}`;
-  questStep.textContent = step?.questLabel ?? "Cupcake Quest Complete!";
-  questReward.textContent = step ? `Discover Tanvi’s ${step.portfolioSection}` : "Your portfolio cupcake is ready to serve";
+  questStep.textContent = step?.questLabel ?? "Chain Reaction Complete!";
+  questReward.textContent = step ? `Sets off: ${step.triggers}` : "All eight links fired - try the Chain Reaction Lab";
   questDetail.textContent = step?.instruction ?? "Explore freely or reset the quest to bake again.";
   trackerCount.textContent = `${Math.min(currentStepIndex + 1, CUPCAKE_STEPS.length)}/${CUPCAKE_STEPS.length}`;
   questProgress.innerHTML = CUPCAKE_STEPS.map((item, index) => `<span class="${index < currentStepIndex ? "is-done" : ""} ${index === currentStepIndex ? "is-current" : ""}" title="${item.questLabel}"></span>`).join("");
   trackerList.innerHTML = CUPCAKE_STEPS.map((item, index) => {
     const state = index < currentStepIndex ? "completed" : index === currentStepIndex ? "current" : "locked";
     const symbol = state === "completed" ? "✓" : state === "current" ? "→" : "○";
-    const content = `<span class="tracker-symbol">${symbol}</span><span><strong>${item.number}. ${item.station}</strong><small>${item.portfolioSection}</small></span>`;
+    const content = `<span class="tracker-symbol">${symbol}</span><span><strong>${item.number}. ${item.station}</strong><small>→ ${item.triggers}</small></span>`;
     return state === "completed"
-      ? `<button class="tracker-step ${state}" type="button" data-review-step="${index}" aria-label="Review step ${item.number}, ${item.portfolioSection}">${content}</button>`
+      ? `<button class="tracker-step ${state}" type="button" data-review-step="${index}" aria-label="Review step ${item.number}, ${item.station}">${content}</button>`
       : `<div class="tracker-step ${state}">${content}</div>`;
   }).join("");
 }
@@ -993,11 +1027,12 @@ function highlightStation() {
 
 function showToast(message) {
   window.clearTimeout(toastTimer);
+  speak(message);
   gameHint.textContent = message;
   gameHint.classList.add("is-visible", "is-alert");
   toastTimer = window.setTimeout(() => {
     gameHint.classList.remove("is-alert");
-    gameHint.textContent = gamePaused ? "Complete the recipe card to continue" : "Directions: click or tap to move · Objective: explore the bakery";
+    gameHint.textContent = gamePaused ? "Complete the recipe card to continue" : "Directions: click or tap to move · Objective: keep the chain going";
   }, 1800);
 }
 
@@ -1043,8 +1078,9 @@ function openRecipeCard(stepIndex, { review = false } = {}) {
   pendingStepIndex = review ? null : stepIndex;
   recipeStepNumber.textContent = `STEP ${step.number} · ${step.station.toUpperCase()}`;
   recipeTitle.textContent = step.questLabel;
-  recipeSection.textContent = step.portfolioSection;
+  recipeSection.textContent = `Sets off: ${step.triggers}`;
   recipeMessage.textContent = step.completionMessage;
+  speak(`${step.questLabel}. ${step.completionMessage}`);
   recipeContent.textContent = step.content;
   Object.entries(recipeInteractions).forEach(([id, interaction]) => {
     interaction.hidden = step.id !== id;
@@ -1068,7 +1104,7 @@ function openRecipeCard(stepIndex, { review = false } = {}) {
     || step.id === "serving" && servingStage !== "complete";
   continueButton.innerHTML = review
     ? "Finish Replay"
-    : `${stepIndex === CUPCAKE_STEPS.length - 1 ? "Finish Quest" : "Continue Quest"} <span aria-hidden="true">→</span>`;
+    : `${stepIndex === CUPCAKE_STEPS.length - 1 ? "Finish the Chain" : "Set Off Next Link"} <span aria-hidden="true">→</span>`;
   if (step.id === "ingredients") renderIngredients(step);
   recipeLink.hidden = !step.link;
   if (step.link) recipeLink.href = step.link;
@@ -1654,6 +1690,7 @@ function advanceQuest() {
     freeExplore = true;
     window.setTimeout(() => {
       openDialog(completionDialog, exploreButton);
+      speak("Chain reaction complete! One order set off all eight stations. Try breaking the chain in the Chain Reaction Lab.");
       celebrateStep(true);
     }, 180);
   } else {
@@ -1761,6 +1798,7 @@ function skipCurrentStep() {
     freeExplore = true;
     window.setTimeout(() => {
       openDialog(completionDialog, exploreButton);
+      speak("Chain reaction complete! One order set off all eight stations. Try breaking the chain in the Chain Reaction Lab.");
       celebrateStep(true);
     }, 180);
     return;
@@ -1810,7 +1848,7 @@ function showHome() {
   stopConveyorSound();
   stopSprinkleSound();
   hideInterfaceGuides({ resumeGame: false });
-  [recipeDialog, frostingDialog, cupcakeEditorDialog, completionDialog, characterDialog, quitDialog].forEach((dialog) => {
+  [recipeDialog, frostingDialog, cupcakeEditorDialog, completionDialog, characterDialog, quitDialog, chainLabDialog].forEach((dialog) => {
     if (dialog.open) dialog.close();
   });
   gamePaused = true;
@@ -2000,6 +2038,10 @@ function setupUiEvents() {
     }
   });
   exploreButton.addEventListener("click", () => closeDialog(completionDialog));
+  completionLabButton.addEventListener("click", () => {
+    closeDialog(completionDialog);
+    openChainLab();
+  });
   resetButton.addEventListener("click", requestReplay);
   completionReplay.addEventListener("click", requestReplay);
   confirmReset.addEventListener("click", (event) => {
@@ -2204,9 +2246,9 @@ playGameChoice.addEventListener("click", () => {
   }, 180);
 });
 quickLinksChoice.addEventListener("click", () => {
-  playSoundEffect("quickLinks");
+  playSoundEffect("gameStart");
   closeDialog(entryChoiceDialog);
-  showQuickLinksGuide();
+  openChainLab();
 });
 quickLinksGuideClose.addEventListener("click", () => hideQuickLinksGuide());
 quickLinksGotIt.addEventListener("click", () => hideQuickLinksGuide());
@@ -2229,6 +2271,7 @@ document.addEventListener("click", (event) => {
     finishQuestReminder.hidden = true;
     closeDialog(dialog);
   }
+  else if (dialog === chainLabDialog) closeDialog(dialog);
   else dialog.close();
 }, true);
 objectiveDialog.addEventListener("click", (event) => {
@@ -2284,6 +2327,161 @@ if (FINE_POINTER.matches) {
   });
   document.documentElement.addEventListener("mouseleave", () => customPixelCursor.classList.remove("is-visible"));
 }
+let chainLab = null;
+
+function setChainLabBusy(busy) {
+  chainLabStations.querySelectorAll("button").forEach((button) => {
+    button.setAttribute("aria-disabled", String(busy));
+  });
+}
+
+function ensureChainLab() {
+  if (chainLab) return chainLab;
+  chainLab = createChainReactionLab({
+    canvas: chainLabCanvas,
+    onScoreChange: ({ score, highScore }) => {
+      chainLabScore.textContent = String(score);
+      chainLabHighScore.textContent = String(highScore);
+      setChainLabBusy(false);
+    },
+    // Minor lines ("Round 3: shock at Oven") aren't read aloud in endless mode,
+    // so the narrator doesn't cut off each round's result.
+    onLog: (message, { minor = false } = {}) => {
+      chainLabLog.textContent = message;
+      if (minor) setChainLabBusy(true);
+      if (!minor || !chainLabEndless.checked) speak(message);
+    },
+    onGameOver: ({ score, highScore, round }) => {
+      const message = `System collapse after ${round} round${round === 1 ? "" : "s"}! Final score ${score}.`;
+      chainLabEndless.checked = false;
+      chainLabLog.textContent = message;
+      chainLabGameOverDetail.textContent = `Final score ${score} · Best ${highScore} · ${round} round${round === 1 ? "" : "s"}`;
+      chainLabGameOver.hidden = false;
+      chainLabPlayAgain.focus();
+      speak(message);
+    },
+  });
+  return chainLab;
+}
+
+function resetChainLab() {
+  ensureChainLab().reset();
+  chainLabGameOver.hidden = true;
+  chainLabLog.textContent = "Click any station to begin.";
+}
+
+CHAIN_LAB_NODES.forEach((node) => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.nodeId = node.id;
+  button.textContent = node.label;
+  button.setAttribute("aria-label", `Shock ${node.label}`);
+  chainLabStations.append(button);
+});
+chainLabStations.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-node-id]");
+  if (!button || !chainLabGameOver.hidden) return;
+  if (!ensureChainLab().triggerShock(button.dataset.nodeId)) {
+    chainLabLog.textContent = "Cascade still running - wait for it to settle.";
+  }
+});
+// Mirror keyboard focus / hover on the graph so it's clear which node a button shocks.
+["focusin", "pointerover"].forEach((type) => chainLabStations.addEventListener(type, (event) => {
+  const button = event.target.closest("button[data-node-id]");
+  if (button) ensureChainLab().setHighlight(button.dataset.nodeId);
+}));
+["focusout", "pointerleave"].forEach((type) => chainLabStations.addEventListener(type, () => {
+  chainLab?.setHighlight(null);
+}));
+
+function openChainLab() {
+  const lab = ensureChainLab();
+  const state = lab.getState();
+  chainLabScore.textContent = String(state.score);
+  chainLabHighScore.textContent = String(state.highScore);
+  chainLabEndless.checked = state.endlessMode;
+  chainLabColorblind.checked = state.colorblindMode;
+  openDialog(chainLabDialog, chainLabStations.querySelector("button"));
+  speak("Chain Reaction Lab. Shock a station to start a cascade.");
+}
+
+chainLabButton.addEventListener("click", openChainLab);
+chainLabDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeDialog(chainLabDialog);
+});
+// Don't let endless mode (or its narration) keep running behind a closed dialog.
+chainLabDialog.addEventListener("close", () => {
+  if (!chainLab) return;
+  chainLab.setEndlessMode(false);
+  chainLabEndless.checked = false;
+  chainLab.setHighlight(null);
+});
+chainLabEndless.addEventListener("change", () => {
+  ensureChainLab().setEndlessMode(chainLabEndless.checked);
+  if (chainLabEndless.checked && !chainLab.getState().running) {
+    chainLabLog.textContent = "Endless mode on - shock any station to start the run.";
+  }
+});
+chainLabColorblind.addEventListener("change", () => {
+  ensureChainLab().setColorblindMode(chainLabColorblind.checked);
+});
+chainLabReset.addEventListener("click", () => {
+  resetChainLab();
+  chainLabEndless.checked = false;
+});
+chainLabPlayAgain.addEventListener("click", () => {
+  resetChainLab();
+  chainLabStations.querySelector("button")?.focus();
+});
+
+function readTextSize() {
+  try {
+    const saved = localStorage.getItem(TEXT_SIZE_KEY);
+    return TEXT_SIZES.includes(saved) ? saved : "normal";
+  } catch {
+    return "normal";
+  }
+}
+
+function applyTextSize(size) {
+  document.body.dataset.textSize = size;
+  textSizeToggle.textContent = `Font size ${TEXT_SIZE_LABELS[size]}`;
+  const next = TEXT_SIZES[(TEXT_SIZES.indexOf(size) + 1) % TEXT_SIZES.length];
+  textSizeToggle.setAttribute("aria-label", `Font size ${TEXT_SIZE_LABELS[size]}. Change to ${TEXT_SIZE_LABELS[next]}.`);
+}
+
+applyTextSize(readTextSize());
+textSizeToggle.addEventListener("click", () => {
+  const next = TEXT_SIZES[(TEXT_SIZES.indexOf(document.body.dataset.textSize) + 1) % TEXT_SIZES.length];
+  applyTextSize(next);
+  localStorage.setItem(TEXT_SIZE_KEY, next);
+});
+
+function narratorContext() {
+  if (chainLabDialog.open) return "Chain Reaction Lab. Shock a station to start a cascade.";
+  const step = CUPCAKE_STEPS[currentStepIndex];
+  if (!step) return "The chain is complete. Try the Chain Reaction Lab.";
+  return `Step ${step.number} of ${CUPCAKE_STEPS.length}: ${step.questLabel}. ${step.instruction}`;
+}
+
+function updateNarratorToggle() {
+  const on = isNarratorEnabled();
+  narratorToggle.textContent = on ? "🔈 Narrator" : "🔇 Narrator";
+  narratorToggle.setAttribute("aria-pressed", String(on));
+  narratorToggle.setAttribute("aria-label", on ? "Turn voice narrator off" : "Turn voice narrator on");
+}
+
+if (narratorSupported) {
+  narratorToggle.hidden = false;
+  updateNarratorToggle();
+  narratorToggle.addEventListener("click", () => {
+    const on = toggleNarrator();
+    updateNarratorToggle();
+    if (on) speak(`Narrator on. ${narratorContext()}`);
+  });
+}
+
 setupCharacterUi();
 Object.values(soundEffects).forEach(({ audio }) => {
   audio.preload = "auto";

@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f8edd8" />
-    <meta name="description" content="Tanvi's Portfolio Bakery, a cozy interactive CS portfolio." />
+    <meta name="description" content="Chain Reaction Bakery: one cupcake order sets off a chain reaction through eight bakery stations. Made for the Chain Reaction! game jam." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
-    <title>Tanvi's Portfolio Bakery</title>
+    <title>Chain Reaction Bakery</title>
   </head>
   <body>
-    <main id="game-shell" aria-label="Tanvi's Portfolio Bakery interactive portfolio">
+    <main id="game-shell" aria-label="Chain Reaction Bakery game">
       <canvas id="game-canvas"></canvas>
       <audio id="background-music" autoplay loop preload="auto" playsinline></audio>
       <div class="interface-tour-shade" id="interface-tour-shade" aria-hidden="true" hidden></div>
@@ -27,30 +27,31 @@
 
       <section class="welcome-panel" id="welcome-panel" aria-labelledby="welcome-title">
         <button class="panel-stamp" id="open-guide" type="button" aria-label="Open the bakery welcome guide">OPEN</button>
-        <p class="eyebrow">A tiny interactive portfolio</p>
-        <h1 id="welcome-title">Welcome to Tanvi’s<br /><span>Portfolio Bakery</span></h1>
+        <p class="eyebrow">A game jam game · Theme: Chain Reaction!</p>
+        <h1 id="welcome-title">Welcome to the<br /><span>Chain Reaction Bakery</span></h1>
         <p class="welcome-copy">
-          Wander through a warm little bakery to discover Tanvi's projects, skills, a résumé,
-          GitHub, and ways to get in touch.
+          One cupcake order sets off a chain reaction: every station's output powers the next.
+          Keep the chain going from the first egg to the final customer - then break it on purpose
+          in the Chain Reaction Lab and watch the damage cascade.
         </p>
         <div class="how-to-play">
-          <button class="pixel-cursor" id="objective-help" type="button" aria-label="Learn how the interactive portfolio works">+</button>
+          <button class="pixel-cursor" id="objective-help" type="button" aria-label="Learn how the game works">+</button>
           <span class="how-to-copy">
             <span class="instruction-line"><strong>Directions:</strong><span>Click or tap to move</span></span>
-            <span class="instruction-line"><strong>Objective:</strong><span>Explore the bakery to discover Tanvi’s portfolio.</span></span>
+            <span class="instruction-line"><strong>Objective:</strong><span>Keep the chain reaction going through all 8 stations.</span></span>
           </span>
         </div>
         <button class="customize-button" id="customize-button" type="button">Customize character</button>
         <button class="start-button" id="start-button" type="button">Enter the bakery <span class="start-arrow" aria-hidden="true">→</span></button>
-        <p class="panel-note">Hi! I'm Tanvi and I love to bake. Take a look at my portfolio through a fun bakery game :)</p>
+        <p class="panel-note">Made by Tanvi for the Chain Reaction! game jam. One small spark, eight stations, one big reaction :)</p>
       </section>
 
       <dialog class="objective-dialog" id="objective-dialog" aria-labelledby="objective-title">
         <div class="objective-paper">
           <button class="dialog-close" id="objective-close" type="button" aria-label="Close instructions">×</button>
           <p class="dialog-kicker">HOW IT WORKS</p>
-          <h2 id="objective-title">Bake Your Way Through</h2>
-          <p>Bake, frost, and decorate cupcakes to reveal Tanvi’s portfolio, projects, and skills.</p>
+          <h2 id="objective-title">Keep the Chain Going</h2>
+          <p>Each station sets off the next: ingredients start the batter, the batter fills the tray, the oven triggers frosting, and so on to the customer. Finish the chain, then trigger a meltdown in the Chain Reaction Lab.</p>
         </div>
       </dialog>
 
@@ -58,8 +59,8 @@
         <div class="objective-paper open-guide-paper">
           <button class="dialog-close" type="button" aria-label="Close welcome guide">×</button>
           <p class="dialog-kicker">WELCOME IN</p>
-          <h2 id="open-guide-title">Ready to explore?</h2>
-          <p>Customize your character, then press Enter the Bakery to begin your cupcake quest.</p>
+          <h2 id="open-guide-title">Ready to start the reaction?</h2>
+          <p>Customize your character, then press Enter the Bakery to set off the first link in the chain.</p>
           <div class="open-guide-actions">
             <button class="customize-button" id="open-guide-customize" type="button">Customize character</button>
             <button class="start-button" id="open-guide-enter" type="button">Enter the bakery <span class="start-arrow" aria-hidden="true">→</span></button>
@@ -70,11 +71,11 @@
       <dialog class="objective-dialog entry-choice-dialog" id="entry-choice-dialog" aria-labelledby="entry-choice-title">
         <div class="objective-paper entry-choice-paper">
           <p class="dialog-kicker">CHOOSE YOUR ROUTE</p>
-          <h2 id="entry-choice-title">How would you like to explore?</h2>
-          <p>Play the bakery quest, or use the navigation bar for quick access to projects, skills, résumé, GitHub, and contact.</p>
+          <h2 id="entry-choice-title">How do you want to play?</h2>
+          <p>Bake the full chain station by station, or jump straight into the Chain Reaction Lab and set off a cascade.</p>
           <div class="entry-choice-actions">
-            <button class="start-button" id="play-game-choice" type="button">Play the Game</button>
-            <button class="default-button" id="quick-links-choice" type="button">Use Quick Links</button>
+            <button class="start-button" id="play-game-choice" type="button">Bake the Chain</button>
+            <button class="default-button" id="quick-links-choice" type="button">⚡ Jump to the Lab</button>
           </div>
         </div>
       </dialog>
@@ -98,32 +99,27 @@
         </div>
       </dialog>
 
-      <nav class="quick-nav" aria-label="Quick portfolio links">
+      <nav class="quick-nav" aria-label="Game navigation">
         <button class="home-button" id="home-button" type="button">Home</button>
-        <a href="#projects">Projects</a>
-        <a href="#skills">Skills</a>
-        <a href="#resume">Résumé</a>
-        <a href="#github">GitHub</a>
-        <a href="#contact">Contact</a>
       </nav>
 
       <div class="quick-links-guide" id="quick-links-guide" hidden>
         <span class="quick-links-pointer" aria-hidden="true"></span>
         <aside class="quick-links-tip" aria-labelledby="quick-links-tip-title">
           <button id="quick-links-guide-close" type="button" aria-label="Close quick links guide">×</button>
-          <strong id="quick-links-tip-title">Use the Quick Links</strong>
-          <p>Jump straight to Tanvi’s projects, skills, résumé, GitHub, or contact details without completing every bakery step.</p>
+          <strong id="quick-links-tip-title">Home</strong>
+          <p>Head back to the welcome screen anytime.</p>
           <button class="quick-links-got-it" id="quick-links-got-it" type="button">Got It</button>
         </aside>
       </div>
 
       <section class="quest-card" id="quest-panel" aria-live="polite">
         <div class="quest-card-heading">
-          <p class="quest-kicker">Cupcake quest</p>
+          <p class="quest-kicker">Chain reaction</p>
           <span class="quest-count" id="quest-count">Step 1 of 8</span>
         </div>
         <strong id="quest-step">Gather the Ingredients</strong>
-        <span class="quest-reward" id="quest-reward">Discover Tanvi’s About Me</span>
+        <span class="quest-reward" id="quest-reward">Sets off: Batter</span>
         <span class="quest-instruction" id="quest-detail">Visit the ingredients station.</span>
         <div class="quest-card-footer">
           <div class="quest-progress" id="quest-progress" aria-label="Cupcake progress"></div>
@@ -167,10 +163,16 @@
           </aside>
         </div>
 
-        <div class="sound-controls" aria-label="Background music controls">
-          <button id="volume-down" type="button" aria-label="Decrease music volume">−</button>
-          <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-expanded="false" aria-label="Show music controls">♫ 25%</button>
-          <button id="volume-up" type="button" aria-label="Increase music volume">+</button>
+        <div class="hud-controls-row">
+          <div class="a11y-controls" role="group" aria-label="Accessibility controls">
+            <button id="text-size-toggle" type="button" aria-label="Font size 100%. Change to 115%.">Font size 100%</button>
+            <button id="narrator-toggle" type="button" aria-pressed="false" hidden>🔇 Narrator</button>
+          </div>
+          <div class="sound-controls" aria-label="Background music controls">
+            <button id="volume-down" type="button" aria-label="Decrease music volume">−</button>
+            <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-expanded="false" aria-label="Show music controls">♫ 25%</button>
+            <button id="volume-up" type="button" aria-label="Increase music volume">+</button>
+          </div>
         </div>
 
         <aside class="interface-guide sound-controls-guide" id="sound-controls-guide" role="dialog" aria-labelledby="sound-controls-guide-title" hidden>
@@ -190,6 +192,48 @@
       </div>
 
       <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+
+      <button class="chain-lab-button" id="chain-lab-button" type="button">⚡ Chain Reaction Lab</button>
+
+      <dialog class="recipe-dialog chain-lab-dialog" id="chain-lab-dialog" aria-labelledby="chain-lab-title">
+        <div class="dialog-paper chain-lab-paper">
+          <button class="dialog-close" id="chain-lab-close" type="button" aria-label="Close Chain Reaction Lab">×</button>
+          <p class="dialog-kicker">CHAIN REACTION LAB</p>
+          <h2 id="chain-lab-title">Trigger a shock</h2>
+          <p class="dialog-content">
+            The bakery is a pipeline: Ingredients feed Batter feed Assembly feed the Oven, which
+            fans out to Frosting and Packaging, on to Decorating and Serving. Shock a station and watch
+            the reaction cascade downstream through the dependency graph, modeled after
+            <strong>DebtRank</strong>, the algorithm used to measure contagion risk in financial networks.
+          </p>
+          <div class="chain-lab-stage">
+            <canvas id="chain-lab-canvas" width="580" height="280" role="img" aria-label="Bakery dependency graph. Click a station, or use the station buttons below, to trigger a shock."></canvas>
+            <div class="chain-lab-gameover" id="chain-lab-gameover" role="alertdialog" aria-labelledby="chain-lab-gameover-title" hidden>
+              <p class="dialog-kicker">GAME OVER</p>
+              <strong id="chain-lab-gameover-title">System Collapse</strong>
+              <p id="chain-lab-gameover-detail"></p>
+              <button class="start-button" id="chain-lab-play-again" type="button">Play Again</button>
+            </div>
+          </div>
+          <div class="chain-lab-stations" id="chain-lab-stations" role="group" aria-label="Shock a station"></div>
+          <div class="chain-lab-readout">
+            <span>Score: <strong id="chain-lab-score">0</strong></span>
+            <span>Best: <strong id="chain-lab-highscore">0</strong></span>
+            <span id="chain-lab-log" aria-live="polite">Click any station to begin.</span>
+          </div>
+          <div class="chain-lab-controls">
+            <label class="chain-lab-toggle">
+              <input type="checkbox" id="chain-lab-endless" />
+              Endless mode
+            </label>
+            <label class="chain-lab-toggle">
+              <input type="checkbox" id="chain-lab-colorblind" />
+              Colorblind-safe palette
+            </label>
+            <button class="default-button" id="chain-lab-reset" type="button">Reset Simulation</button>
+          </div>
+        </div>
+      </dialog>
 
       <dialog class="recipe-dialog cupcake-editor-dialog" id="cupcake-editor-dialog" aria-labelledby="cupcake-editor-title">
         <div class="dialog-paper cupcake-editor-paper">
@@ -243,11 +287,11 @@
           <button class="dialog-close" id="dialog-close" type="button" aria-label="Close recipe card">×</button>
           <p class="dialog-kicker" id="recipe-step-number">STEP 1</p>
           <h2 id="recipe-title">Gather the Ingredients</h2>
-          <p class="dialog-section" id="recipe-section">About Me</p>
+          <p class="dialog-section" id="recipe-section">Sets off: Batter</p>
           <p class="dialog-message" id="recipe-message"></p>
           <p class="dialog-content" id="recipe-content"></p>
           <div class="ingredients-interaction" id="ingredients-interaction" hidden>
-            <p class="interaction-instruction">Tap each ingredient to reveal one fact about Tanvi.</p>
+            <p class="interaction-instruction">Tap each ingredient to see what it sets off down the line.</p>
             <div class="ingredient-grid" id="ingredient-grid"></div>
             <p class="ingredient-feedback" id="ingredient-feedback" aria-live="polite">4 ingredients remain.</p>
           </div>
@@ -354,12 +398,12 @@
             <button class="serve-action-button" id="serve-action-button" type="button">Send Order Down the Belt</button>
           </div>
           <div class="technology-tags" id="technology-tags"></div>
-          <a class="dialog-link" id="recipe-link" href="#" target="_blank" rel="noreferrer">Open portfolio link</a>
-          <button class="continue-button" id="continue-button" type="button">Continue Quest <span aria-hidden="true">→</span></button>
+          <a class="dialog-link" id="recipe-link" href="#" target="_blank" rel="noreferrer">Learn more</a>
+          <button class="continue-button" id="continue-button" type="button">Set Off Next Link <span aria-hidden="true">→</span></button>
           <div class="finish-quest-reminder" id="finish-quest-reminder" role="status" hidden>
             <button id="finish-quest-reminder-close" type="button" aria-label="Close reminder">×</button>
             <strong>Almost finished!</strong>
-            <span>Click Finish Quest to move on.</span>
+            <span>Click Finish the Chain to move on.</span>
           </div>
           <div class="step-navigation">
             <button class="previous-step-button" id="previous-step-button" type="button"><span aria-hidden="true">←</span> Previous Step</button>
@@ -373,7 +417,7 @@
           <button class="dialog-close" id="frosting-close" type="button" aria-label="Close frosting interaction">×</button>
           <p class="dialog-kicker">STEP 5 · FROSTING</p>
           <h2 id="frosting-title">Tap to Frost</h2>
-          <p class="dialog-content">Three swirls unlock Tanvi’s Technologies.</p>
+          <p class="dialog-content">Three swirls set off the decorating station.</p>
           <fieldset class="frosting-picker">
             <legend>Pick a frosting flavor</legend>
             <div>
@@ -399,14 +443,12 @@
       <dialog class="recipe-dialog completion-dialog" id="completion-dialog" aria-labelledby="completion-title">
         <div class="confetti-layer completion-confetti-layer" id="completion-confetti-layer" aria-hidden="true"></div>
         <div class="dialog-paper">
-          <p class="dialog-kicker">BAKERY TOUR COMPLETE</p>
-          <h2 id="completion-title">Cupcake Quest Complete!</h2>
-          <p class="dialog-content">Thanks for exploring Tanvi’s Portfolio Bakery. The finished portfolio is ready to serve.</p>
-          <div class="completion-actions">
-            <a href="#projects">View All Projects</a><a href="#resume">Résumé</a><a href="#github">GitHub</a><a href="#contact">Contact Me</a>
-          </div>
-          <button class="continue-button" id="explore-button" type="button">Explore the Bakery Again</button>
-          <button class="reset-button completion-replay" id="completion-replay" type="button">Replay Quest</button>
+          <p class="dialog-kicker">CHAIN COMPLETE</p>
+          <h2 id="completion-title">Chain Reaction Complete!</h2>
+          <p class="dialog-content">One order set off all eight stations, from the first egg to a happy customer. Now see what happens when a link breaks: shock a station in the Chain Reaction Lab and watch the damage cascade.</p>
+          <button class="start-button completion-lab-button" id="completion-lab" type="button">⚡ Open the Chain Reaction Lab</button>
+          <button class="continue-button" id="explore-button" type="button">Explore the Bakery</button>
+          <button class="reset-button completion-replay" id="completion-replay" type="button">Restart the Chain</button>
         </div>
       </dialog>
 
@@ -426,7 +468,7 @@
         </form>
       </dialog>
 
-      <div class="game-hint" id="game-hint" aria-live="polite">Directions: click or tap to move · Objective: explore the bakery</div>
+      <div class="game-hint" id="game-hint" aria-live="polite">Directions: click or tap to move · Objective: keep the chain going</div>
     </main>
     <aside class="rotate-device" role="status" aria-label="Rotate your phone">
       <span class="rotate-phone-icon" aria-hidden="true"></span>

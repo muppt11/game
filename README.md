@@ -1,6 +1,10 @@
-# Tanvi's Portfolio Bakery
+# Chain Reaction Bakery
 
-An interactive portfolio built with Vite and Kaboom.js. Visitors customize a character, move through eight bakery stations, complete cupcake activities, and unlock portfolio sections along the way.
+A cozy pixel bakery game made with Vite and Kaboom.js for a game jam themed **Chain Reaction!**
+
+One cupcake order sets off a chain reaction: every station's output powers the next, from the first egg to the final customer. Finish the chain, then break it on purpose in the **Chain Reaction Lab**, a small DebtRank-style contagion simulation where shocking one station cascades through the bakery's dependency graph. Score points for every station that goes critical, chase deeper chains, or play endless mode until the system collapses.
+
+Accessibility: keyboard-operable station buttons, a colorblind-safe palette (with ✓ / ! / ✕ symbols on every node), a font size control, and an optional voice narrator.
 
 ## Development
 
@@ -19,6 +23,8 @@ npm run preview
 ## Structure
 
 - `src/main.js` contains the bakery scene, interactions, state, and controls.
+- `src/chainReaction.js` is the Chain Reaction Lab cascade engine and canvas renderer (tests: `node src/chainReaction.test.js`).
+- `src/narrator.js` is the optional Web Speech narrator.
 - `src/style.css` contains the interface and activity artwork.
 - `src/constants.js` defines stations, quest steps, and the color palette.
 - `src/kaboomCtx.js` configures Kaboom.
