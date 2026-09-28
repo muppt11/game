@@ -8,7 +8,7 @@ export const DAY_TITLES = ["Opening Day", "Rush Hour", "The Regulars", "Critic W
 const DAY_TIPS = [
   [
     "Ingredients → Oven → Frosting → Toppings → Serving. Pop-up tips will walk you through your first order.",
-    "Just click a station to walk there, then click what to do. (Keyboard shortcuts are optional - they're shown in the corner of each station.)",
+    "Click a station, choose a recipe, then gather ingredients, stir, pipe frosting, and decorate in the close-up. Confirm to finish each task. The shift clock keeps running. (Keyboard shortcuts are optional - they're shown in the corner of each station.)",
     "Don't leave cupcakes in the oven too long - they burn!",
     "Serve 3 customers in a row for your first <strong>streak bonus</strong>.",
   ],

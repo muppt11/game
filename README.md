@@ -1,16 +1,12 @@
-# Guided bakery restored
-
-The main page restores the eight interactive stations from commit `5566956`, before the timed-game rewrite: ingredient gathering, mixing, dispensing, baking, frosting, decorating, packaging, and serving. Its original step tracker and next-station guidance are included, alongside the Heat Lab and accessibility controls.
-
-The timed Cupcake Rush game remains available at `rush.html`. Both pages are built and deployed together. The original gameplay files are isolated in `src/classic/` so changes to one mode do not replace the other.
-
-For a video demo, open the main page, start the guided bakery, and follow the highlighted stations. Use the recipe tracker to see the current step.
-
----
-
 # Tanvi's Cupcake Rush
 
 A cozy pixel cooking game made with Vite and Kaboom.js for the **Chain Reaction!** game jam. Think Papa's Cupcakeria meets Overcooked: customers line up with order tickets, and you run between stations to bake each cupcake before their patience runs out.
+
+## Hands-on stations
+
+The timed game now includes ingredient gathering (click or drag into the bowl), three stirs, batter dispensing, loading the oven, three frosting swirls, topping placement, and boxing with a ribbon. These close-ups use the selected order ingredients and commit to the same shift inventory when confirmed. Back/Escape cancels without applying an ingredient or awarding an item.
+
+The shift timer, ovens, and customer patience continue during station activities, except the guided first order's existing clock/patience hold. Finishing a shift closes any unfinished activity. Both solo and Bake-Off use the same interactions.
 
 ## How it plays
 

@@ -10,6 +10,7 @@ import { randomSeed } from "./game/rng";
 import { createShift, hintFor } from "./game/shift";
 import { PALETTES, createBakeryScene } from "./game/scene";
 import { createHud, createScreens, createStationPanel, describeItem, escapeHtml, renderOrders, renderRecipeProgress } from "./game/ui";
+import { createStationActivities } from "./game/activities";
 import { createCoach } from "./game/coach";
 import { DAY_TITLES, bookHtml, dayIntroHtml, runEndHtml, shopHtml, summaryHtml, upgradesOwnedHtml, vsResultsHtml, vsSetupHtml } from "./game/screens";
 
@@ -159,8 +160,19 @@ const screens = createScreens({
   actions: $("#game-dialog-actions"),
 });
 
+const activities = createStationActivities({
+  host: shell,
+  sound: playSound,
+  onCommit: (stationId, actionId) => {
+    if (phase !== "shift" || !shift) return;
+    if (shift.perform(stationId, actionId)) panel.refresh(shift);
+    else showBanner("Station unavailable — check heat and try again", "heat");
+  },
+});
+
 function performAction(stationId, actionId) {
-  if (phase !== "shift" || !shift) return;
+  if (phase !== "shift" || !shift || activities.active) return;
+  if (activities.start(shift, stationId, actionId)) return;
   if (shift.perform(stationId, actionId)) panel.refresh(shift);
 }
 
@@ -178,7 +190,7 @@ const scene = createBakeryScene({
   getCharacter: getCharacterLook,
   getTextScale: () => textSize.scale,
   getPalette: () => PALETTES[paletteId],
-  isPaused: () => phase !== "shift",
+  isPaused: () => phase !== "shift" || activities.active,
   onArrive: (stationId) => {
     if (!shift) return;
     if (stationId === "recipeBook") openBook();
@@ -374,9 +386,10 @@ function gameFrame(dt) {
     return;
   }
   if (phase !== "shift" || !shift) return;
-  if (document.querySelector("dialog[open]")) return;
+  if (document.querySelector("dialog[open]:not(.station-activity-dialog)")) return;
   shift.tick(dt);
   if (!shift || phase !== "shift") return;
+  activities.update();
   coach.frame();
   hud.update({ shift, dayLabel: shiftLabel(), playerLabel: run.mode === "vs" ? run.name : "", goal: dayConfig(run).goal });
   renderOrders(orderRail, shift, shift.state.discovered);
@@ -392,6 +405,7 @@ function enterGameScreen() {
 }
 
 function showMenu() {
+  activities.stop();
   phase = "menu";
   coach.stop();
   shift = null;
@@ -438,6 +452,7 @@ function showDayIntro() {
 }
 
 function startShift() {
+  activities.stop();
   screens.close();
   currentScreen = null;
   const config = dayConfig(run);
@@ -459,6 +474,7 @@ function startShift() {
 }
 
 function endShift(summary) {
+  activities.stop();
   phase = "screen";
   coach.stop();
   panel.hide();

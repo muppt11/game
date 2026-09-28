@@ -5,7 +5,7 @@
 // Ingredients -> Oven -> Frosting -> Toppings, then back along the bottom row
 // through Packaging and Serving. x/y are Kaboom world coordinates (960x540).
 export const STATIONS = [
-  { id: "cafeTable", title: "Ingredients", role: "Pick a flavor", key: "q", x: 139, y: 240 },
+  { id: "cafeTable", title: "Ingredients", role: "Gather & mix", key: "q", x: 139, y: 240 },
   { id: "oven", title: "Oven", role: "Bake", key: "w", x: 365, y: 240 },
   { id: "frostingCounter", title: "Frosting", role: "Frost", key: "e", x: 595, y: 240 },
   { id: "decoratingCounter", title: "Toppings", role: "Add a topping", key: "r", x: 821, y: 240 },

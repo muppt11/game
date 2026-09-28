@@ -425,3 +425,31 @@ body[data-palette="colorblind"] .coach-kicker { color: #8a3f00; }
 .ticket-face[data-mood="grumpy"] .face-eyes { top: 7px; height: 2px; }
 .order-ticket.is-urgent .ticket-face { animation: face-shake 400ms ease-in-out infinite; }
 @keyframes face-shake { 50% { transform: translateX(1px); } }
+
+/* Original hands-on bakery visuals inside the timed game's station close-ups. */
+.activity-paper { width: min(460px, calc(100vw - 32px)); }
+.activity-clock { padding: 7px; color: #fff8e8; background: #3d2929; font-size: calc(10px * var(--text-scale)); }
+.activity-instruction { min-height: 36px; font-size: calc(12px * var(--text-scale)); line-height: 1.5; }
+.activity-workspace { padding: 12px 0; }
+.activity-controls { display: grid; gap: 10px; }
+.activity-controls button { min-height: 40px; }
+.activity-controls button:disabled { opacity: .4; cursor: not-allowed; }
+.activity-dispenser { position: relative; margin-top: 12px; text-align: center; font-size: 11px; }
+.activity-dispenser:not(.is-filled) .cupcake-top { opacity: 0; }
+.activity-nozzle { display: block; color: #6f4436; font-size: 30px; font-weight: bold; }
+.activity-dispenser.is-filled .activity-nozzle { color: #55723b; }
+.activity-decorating { padding: 12px; }
+.activity-piping-bag { width: 45px; margin: 0 auto; color: #e98f9d; font-size: 48px; line-height: 1; transform: rotate(-25deg); filter: drop-shadow(2px 2px #6f4436); }
+.activity-oven-row { display: flex; align-items: center; justify-content: space-around; gap: 8px; }
+.activity-tray { border-bottom: 7px solid #6f4436; cursor: grab; font-size: 10px; text-align: center; }
+.activity-tray.is-loaded { opacity: .25; }
+.activity-oven { position: static; width: 150px; height: auto; padding: 12px; border: 4px solid #6f4436; background: #bd5656; color: #fff8e8; text-align: center; font-size: 11px; }
+.activity-oven > div { min-height: 65px; display: grid; place-items: center; margin-top: 10px; border: 4px solid #3d2929; background: #3d2929; }
+.activity-oven.is-loaded > div { background: #e3a45a; color: #3d2929; }
+.activity-package { position: relative; width: 200px; min-height: 155px; margin: 10px auto; padding: 12px; border: 4px solid #6f4436; background: #f2d6ad; text-align: center; }
+.activity-package[data-package-step="0"] .activity-cupcake { opacity: .3; }
+.activity-box-lid { position: absolute; inset: 0 0 25px; display: none; place-items: center; background: #f2d6ad; border-bottom: 4px solid #6f4436; font-size: 18px; }
+.activity-package[data-package-step="2"] .activity-box-lid, .activity-package[data-package-step="3"] .activity-box-lid { display: grid; }
+.activity-package[data-package-step="3"] .activity-box-lid { background: linear-gradient(90deg, transparent 44%, #e98f9d 44% 56%, transparent 56%), #f2d6ad; }
+.activity-cupcake.has-sprinkles .frosting-swirl { background-image: radial-gradient(circle at 18% 38%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 58% 62%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 80% 28%, var(--topping-color) 0 2px, transparent 3px); }
+@media (max-width: 480px) { .activity-paper { padding: 15px; } .activity-workspace { padding: 5px 0; } }
