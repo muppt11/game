@@ -459,3 +459,16 @@ body[data-palette="colorblind"] .coach-kicker { color: #8a3f00; }
 @media (prefers-reduced-motion: reduce) {
   .station-activity-dialog *, .station-activity-dialog *::after { animation: none !important; transition: none !important; }
 }
+
+/* Restored station art keeps progress readable without red/green distinctions. */
+body[data-palette="colorblind"] .station-activity-dialog .batter-ingredient.is-added,
+body[data-palette="colorblind"] .station-activity-dialog .mixing-bowl.is-mixed { border-color: var(--cb-blue); background: #e3f0f7; }
+body[data-palette="colorblind"] .station-activity-dialog .whisk-button { color: #fff; background: #0072b2; }
+body[data-palette="colorblind"] .station-activity-dialog .activity-oven { background: #e69f00; }
+body[data-palette="colorblind"] .station-activity-dialog .activity-package { --bow-color: #0072b2 !important; }
+body[data-palette="colorblind"] .station-activity-dialog .activity-instruction,
+body[data-palette="colorblind"] .station-activity-dialog .tray-feedback,
+body[data-palette="colorblind"] .station-activity-dialog .baking-feedback,
+body[data-palette="colorblind"] .station-activity-dialog .packaging-feedback { color: #3d2929; }
+body[data-palette="colorblind"] .station-activity-dialog [data-decoration="cherry"] .cupcake-decoration,
+body[data-palette="colorblind"] .station-activity-dialog [data-decoration="cherry"] .package-cupcakes i { background: #d55e00; }
