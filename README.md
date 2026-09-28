@@ -16,7 +16,6 @@ The shift timer, ovens, and customer patience continue during station activities
 - **Heat - the chain reaction:** stations heat up as you use them, especially Turbo bake. An overheated station jams and its heat cascades down the production line (modeled with DebtRank, the algorithm for contagion in financial networks). Cool stations down before the whole kitchen seizes up.
 - **Five days:** hit each day's coin goal to open tomorrow, and spend coins in the shop on upgrades and new ingredients between days.
 - **Bake-Off:** a two-player hot-seat mode. Same budget, same customers, highest score wins.
-- **Heat Lab:** a sandbox showing how heat spreads through the kitchen.
 
 Day 1 starts with a guided first order, and pop-up tips explain each new thing the first time it happens.
 
@@ -25,7 +24,7 @@ Day 1 starts with a guided first order, and pop-up tips explain each new thing t
 - Font size control that scales every piece of text in the game (100-150%)
 - Colorblind-safe mode (Okabe-Ito palette) for every status color, ingredient, and badge; status is always shown with a symbol or text too
 - Optional voice narrator (Web Speech API)
-- Fully playable by mouse, touch, or keyboard; the game scales to fill the screen
+- Fully playable by mouse, touch, or keyboard; the game fits the screen with a 1200px maximum kitchen width and capped dialog sizing
 
 ## Development
 
@@ -48,7 +47,7 @@ npm run preview
 - `src/game/data.js` holds all the tuning: menu, combos, upgrades, and day difficulty.
 - `src/game/scene.js` draws the kitchen, the baker, and the action animations on the Kaboom canvas.
 - `src/game/ui.js`, `src/game/screens.js`, and `src/game/coach.js` are the HUD, the between-day screens, and the tutorial tips.
-- `src/chainReaction.js` is the cascade engine behind heat and the Heat Lab (`node src/chainReaction.test.js`).
+- `src/chainReaction.js` is the cascade engine behind in-game kitchen heat (`node src/chainReaction.test.js`).
 - `src/narrator.js`, `src/audio.js`, and `src/character.js` are the narrator, sound, and baker customization.
 - `src/style.css` and `src/game.css` are the styles.
 - `src/constants.js` holds the canvas size and base colors.

@@ -1,6 +1,5 @@
 import "./style.css";
 import "./game.css";
-import { NODES as LAB_NODES, createChainReactionLab } from "./chainReaction";
 import { isNarratorEnabled, narratorSupported, speak, toggleNarrator } from "./narrator";
 import { playSound, setupAudio } from "./audio";
 import { getCharacterLook, setupCharacterDialog } from "./character";
@@ -82,7 +81,6 @@ function applyPalette() {
   document.body.dataset.palette = paletteId;
   paletteToggle.textContent = paletteId === "colorblind" ? "Colors: Colorblind-safe" : "Colors: Standard";
   paletteToggle.setAttribute("aria-pressed", String(paletteId === "colorblind"));
-  chainLab?.setColorblindMode(paletteId === "colorblind");
 }
 
 textSizeToggle.addEventListener("click", () => {
@@ -112,11 +110,11 @@ if (narratorSupported) {
   });
 }
 
-// Everything is sized for a 960x540 game; scale it all up to fill the screen.
+// Keep the canvas and HUD aligned; cap menu zoom independently for comfortable reading.
 new ResizeObserver(() => {
   const scale = shell.clientWidth / 960;
   shell.style.setProperty("--shell-scale", String(scale));
-  document.documentElement.style.setProperty("--ui-zoom", String(Math.min(2, Math.max(0.7, scale))));
+  document.documentElement.style.setProperty("--ui-zoom", String(Math.min(1.05, Math.max(0.7, scale))));
 }).observe(shell);
 
 // Screen-reader status line, also read aloud when the narrator is on.
@@ -656,7 +654,6 @@ function showPauseScreen(resumePhase) {
     buttons: [
       { label: "Resume", primary: true, onClick: () => resume(resumePhase) },
       { label: "How to play", onClick: () => howToDialog.showModal() },
-      { label: "Heat Lab", onClick: openLab },
       {
         label: "Show tips again",
         onClick: () => {
@@ -704,7 +701,6 @@ pauseButton.addEventListener("click", pause);
 soloButton.addEventListener("click", startSolo);
 $("#vs-button").addEventListener("click", startVsSetup);
 $("#how-to-button").addEventListener("click", () => howToDialog.showModal());
-$("#how-to-lab").addEventListener("click", openLab);
 
 recipeProgress.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-station]");
@@ -745,107 +741,11 @@ document.addEventListener("click", (event) => {
 }, true);
 
 // Static dialogs close on their × button or a backdrop click.
-for (const dialog of document.querySelectorAll("#how-to-dialog, #chain-lab-dialog")) {
+for (const dialog of document.querySelectorAll("#how-to-dialog")) {
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog || event.target.closest(".dialog-close")) dialog.close();
   });
 }
-
-// ---- Heat Lab ------------------------------------------------------------------------------
-
-const labDialog = $("#chain-lab-dialog");
-const labStations = $("#chain-lab-stations");
-const labLog = $("#chain-lab-log");
-const labScore = $("#chain-lab-score");
-const labHighScore = $("#chain-lab-highscore");
-const labEndless = $("#chain-lab-endless");
-const labGameOver = $("#chain-lab-gameover");
-let chainLab = null;
-
-function setLabBusy(busy) {
-  labStations.querySelectorAll("button").forEach((button) => button.setAttribute("aria-disabled", String(busy)));
-}
-
-function ensureChainLab() {
-  if (chainLab) return chainLab;
-  chainLab = createChainReactionLab({
-    canvas: $("#chain-lab-canvas"),
-    onScoreChange: ({ score, highScore }) => {
-      labScore.textContent = String(score);
-      labHighScore.textContent = String(highScore);
-      setLabBusy(false);
-    },
-    onLog: (message, { minor = false } = {}) => {
-      labLog.textContent = message;
-      if (minor) setLabBusy(true);
-      if (!minor || !labEndless.checked) speak(message);
-    },
-    onGameOver: ({ score, highScore, round }) => {
-      const message = `Kitchen meltdown after ${round} round${round === 1 ? "" : "s"}! Final score ${score}.`;
-      labEndless.checked = false;
-      labLog.textContent = message;
-      $("#chain-lab-gameover-detail").textContent = `Final score ${score} · Best ${highScore} · ${round} round${round === 1 ? "" : "s"}`;
-      labGameOver.hidden = false;
-      $("#chain-lab-play-again").focus();
-      speak(message);
-    },
-  });
-  chainLab.setColorblindMode(paletteId === "colorblind");
-  return chainLab;
-}
-
-function resetLab() {
-  ensureChainLab().reset();
-  labGameOver.hidden = true;
-  labLog.textContent = "Click any station to begin.";
-}
-
-LAB_NODES.forEach((node) => {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.dataset.nodeId = node.id;
-  button.textContent = node.label;
-  button.setAttribute("aria-label", `Shock ${node.label}`);
-  labStations.append(button);
-});
-labStations.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-node-id]");
-  if (!button || !labGameOver.hidden) return;
-  if (!ensureChainLab().triggerShock(button.dataset.nodeId)) labLog.textContent = "Cascade still running - wait for it to settle.";
-});
-["focusin", "pointerover"].forEach((type) => labStations.addEventListener(type, (event) => {
-  const button = event.target.closest("button[data-node-id]");
-  if (button) ensureChainLab().setHighlight(button.dataset.nodeId);
-}));
-["focusout", "pointerleave"].forEach((type) => labStations.addEventListener(type, () => chainLab?.setHighlight(null)));
-
-function openLab() {
-  const state = ensureChainLab().getState();
-  labScore.textContent = String(state.score);
-  labHighScore.textContent = String(state.highScore);
-  labEndless.checked = state.endlessMode;
-  labDialog.showModal();
-  labStations.querySelector("button")?.focus();
-  speak("Heat Lab. Shock a station to see how heat spreads.");
-}
-
-labDialog.addEventListener("close", () => {
-  chainLab?.setEndlessMode(false);
-  labEndless.checked = false;
-  chainLab?.setHighlight(null);
-});
-labEndless.addEventListener("change", () => {
-  ensureChainLab().setEndlessMode(labEndless.checked);
-  if (labEndless.checked && !chainLab.getState().running) labLog.textContent = "Endless mode on - shock any station to start the run.";
-});
-$("#chain-lab-reset").addEventListener("click", () => {
-  resetLab();
-  labEndless.checked = false;
-});
-$("#chain-lab-play-again").addEventListener("click", () => {
-  resetLab();
-  labStations.querySelector("button")?.focus();
-});
 
 // ---- Flourishes: confetti and the sprinkle cursor ---------------------------------------------
 

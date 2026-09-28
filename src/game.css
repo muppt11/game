@@ -1,6 +1,6 @@
 /* Chain Reaction Bakery - game UI.
    Every font size is multiplied by --text-scale (the Font size control), and
-   panels/dialogs are zoomed by --ui-zoom so the game fills big screens. */
+   panels/dialogs use a capped --ui-zoom to stay comfortable on big screens. */
 
 :root { --text-scale: 1; --ui-zoom: 1; }
 
@@ -23,7 +23,7 @@ kbd {
 /* ---- Scale menus and dialogs with the screen ---- */
 .welcome-panel { zoom: var(--ui-zoom); max-height: calc((100% - 32px) / var(--ui-zoom)); overflow-y: auto; }
 dialog > .dialog-paper, dialog > .character-paper { zoom: var(--ui-zoom); }
-dialog { max-height: calc(100dvh - 20px); }
+dialog { max-height: calc(100dvh - 24px); max-width: calc(100vw - 24px); overflow: auto; }
 .hud-dock { zoom: var(--ui-zoom); }
 
 /* ---- Welcome ---- */

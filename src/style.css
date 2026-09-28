@@ -17,7 +17,7 @@ button, a { font: inherit; touch-action: manipulation; }
 
 #game-shell {
   position: relative;
-  width: min(calc(100vw - var(--page-gutter) - var(--page-gutter)), calc((100dvh - var(--page-gutter) - var(--page-gutter)) * 16 / 9));
+  width: min(1200px, calc(100vw - var(--page-gutter) - var(--page-gutter)), calc((100dvh - var(--page-gutter) - var(--page-gutter)) * 16 / 9));
   max-width: 100%;
   max-height: calc(100dvh - var(--page-gutter) - var(--page-gutter));
   height: auto;

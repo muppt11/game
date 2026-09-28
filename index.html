@@ -135,8 +135,7 @@
             </section>
             <section>
               <h3>Heat</h3>
-              <p>Every station heats up as you use it - especially <strong>Turbo bake</strong>. When a station overheats (<span class="heat-chip">✕</span>) it jams, and the heat sets off a chain reaction down the line to the next stations. Cool a station by walking to it and clicking <strong>Cool it down</strong>.</p>
-              <button class="default-button" id="how-to-lab" type="button">⚡ Try the Heat Lab</button>
+              <p>Every station heats up as you use it - especially <strong>Turbo bake</strong>. When a station overheats (<span class="heat-chip">JAM</span>) it jams, and the heat sets off a chain reaction down the line to the next stations. Cool a station by walking to it and clicking <strong>Cool it down</strong>.</p>
               <h3>Days and the shop</h3>
               <p>Earn each day's coin goal to open again tomorrow. Spend coins on upgrades and new ingredients between days. Survive all five days to win.</p>
               <h3>Bake-Off</h3>
@@ -165,37 +164,7 @@
         </div>
       </dialog>
 
-      <dialog class="recipe-dialog chain-lab-dialog" id="chain-lab-dialog" aria-labelledby="chain-lab-title">
-        <div class="dialog-paper chain-lab-paper">
-          <button class="dialog-close" id="chain-lab-close" type="button" aria-label="Close the Heat Lab">×</button>
-          <p class="dialog-kicker">HEAT LAB</p>
-          <h2 id="chain-lab-title">How heat spreads</h2>
-          <p class="dialog-content">
-            This is your kitchen's heat map. Shock a station and watch the heat cascade down the line, exactly
-            like an overheated station does mid-shift. The model is <strong>DebtRank</strong>, the algorithm used to
-            measure how distress spreads through financial networks.
-          </p>
-          <div class="chain-lab-stage">
-            <canvas id="chain-lab-canvas" width="580" height="280" role="img" aria-label="Kitchen heat graph. Click a station, or use the station buttons below, to trigger a shock."></canvas>
-            <div class="chain-lab-gameover" id="chain-lab-gameover" role="alertdialog" aria-labelledby="chain-lab-gameover-title" hidden>
-              <p class="dialog-kicker">GAME OVER</p>
-              <strong id="chain-lab-gameover-title">Kitchen Meltdown</strong>
-              <p id="chain-lab-gameover-detail"></p>
-              <button class="start-button" id="chain-lab-play-again" type="button">Play Again</button>
-            </div>
-          </div>
-          <div class="chain-lab-stations" id="chain-lab-stations" role="group" aria-label="Shock a station"></div>
-          <div class="chain-lab-readout">
-            <span>Score: <strong id="chain-lab-score">0</strong></span>
-            <span>Best: <strong id="chain-lab-highscore">0</strong></span>
-            <span id="chain-lab-log" aria-live="polite">Click any station to begin.</span>
-          </div>
-          <div class="chain-lab-controls">
-            <label class="chain-lab-toggle"><input type="checkbox" id="chain-lab-endless" /> Endless mode</label>
-            <button class="default-button" id="chain-lab-reset" type="button">Reset Lab</button>
-          </div>
-        </div>
-      </dialog>
+
     </main>
     <aside class="rotate-device" role="status" aria-label="Rotate your phone">
       <span class="rotate-phone-icon" aria-hidden="true"></span>
