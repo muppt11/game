@@ -3,15 +3,16 @@
 // A small discrete-event graph simulation, styled after DebtRank
 // (Battiston et al.), the algorithm used to measure how distress at one node
 // of a financial network propagates to its neighbors. Here the "network" is
-// Tanvi's own bakery pipeline: Ingredients -> Batter -> Assembly -> Oven ->
-// Frosting -> Decorating -> Packaging -> Serving, plus two extra dependency
-// edges (Oven -> Packaging, Ingredients -> Assembly) so it is a real DAG.
+// the bakery kitchen: Ingredients -> Oven -> Frosting -> Toppings, which
+// feed Packaging, the Display Case, and finally Serving.
 //
 // Trigger a shock at one station and watch it cascade: each hop's impact is
 // scaled by the edge weight and a global decay factor (both < 1), so the
 // distress delivered strictly shrinks hop over hop and eventually drops
 // below MIN_PROPAGATE. That is what guarantees the simulation terminates;
 // MAX_EVENTS is only a hard safety cap.
+
+import { KITCHEN_EDGES, KITCHEN_NODES } from "./game/data.js";
 
 export const CRITICAL_THRESHOLD = 0.6;
 export const WARNING_THRESHOLD = 0.25;
@@ -30,31 +31,20 @@ const CANVAS_WIDTH = 580;
 const CANVAS_HEIGHT = 280;
 const NODE_RADIUS = 26;
 
-// Laid out as a "snake" so the pipeline reads left-to-right along the top
-// row, drops down at the Oven, and runs right-to-left along the bottom.
-export const NODES = [
-  { id: "ingredients", label: "Ingredients", x: 75, y: 80 },
-  { id: "batter", label: "Batter", x: 218, y: 80 },
-  { id: "assembly", label: "Assembly", x: 362, y: 80 },
-  { id: "oven", label: "Oven", x: 505, y: 80 },
-  { id: "frosting", label: "Frosting", x: 505, y: 215 },
-  { id: "decorating", label: "Decorating", x: 362, y: 215 },
-  { id: "packaging", label: "Packaging", x: 218, y: 215 },
-  { id: "serving", label: "Serving", x: 75, y: 215 },
-];
+// The Lab visualizes the bakery's real kitchen: the same stations and heat
+// links as the game (see game/data.js), laid out like the kitchen itself.
+const LAB_LAYOUT = {
+  cafeTable: { x: 75, y: 80 },
+  oven: { x: 218, y: 80 },
+  frostingCounter: { x: 362, y: 80 },
+  decoratingCounter: { x: 505, y: 80 },
+  displayCase: { x: 218, y: 215 },
+  bakeryDoor: { x: 362, y: 215 },
+  deliveryStation: { x: 505, y: 215 },
+};
 
-export const EDGES = [
-  { from: "ingredients", to: "batter", weight: 0.9, delay: 260 },
-  { from: "batter", to: "assembly", weight: 0.85, delay: 260 },
-  { from: "assembly", to: "oven", weight: 0.9, delay: 300 },
-  { from: "oven", to: "frosting", weight: 0.75, delay: 260 },
-  { from: "oven", to: "packaging", weight: 0.55, delay: 420 },
-  { from: "frosting", to: "decorating", weight: 0.85, delay: 260 },
-  { from: "decorating", to: "packaging", weight: 0.85, delay: 260 },
-  { from: "packaging", to: "serving", weight: 0.9, delay: 260 },
-  // Weak shortcut edge, drawn as an arc over Batter so it doesn't hide behind it.
-  { from: "ingredients", to: "assembly", weight: 0.35, delay: 500, arc: -80 },
-];
+export const NODES = KITCHEN_NODES.map((node) => ({ ...node, ...LAB_LAYOUT[node.id] }));
+export const EDGES = KITCHEN_EDGES;
 
 // Every palette keeps a symbol-legible text color per status, so the ✓ / ! / ✕
 // glyph always has enough contrast against its fill.
@@ -125,19 +115,20 @@ export class MinHeap {
 
 /**
  * Runs the cascade for a single shock and returns every distress update in
- * the order it happened, with its simulated timestamp and hop depth.
+ * the order it happened, with its simulated timestamp and hop depth. Defaults
+ * to the Lab's graph; the bakery game passes its own kitchen graph.
  *
  * Properties (covered in chainReaction.test.js):
  *  - distress is monotonically non-decreasing per node,
  *  - propagated impact strictly shrinks each hop (weight * decay < 1),
  *  - so the heap always drains, for every trigger node.
  */
-export function simulateCascade(triggerId, { decay = BASE_GLOBAL_DECAY, startDistress = {} } = {}) {
-  const adjacency = new Map(NODES.map((node) => [node.id, []]));
-  for (const edge of EDGES) adjacency.get(edge.from)?.push(edge);
+export function simulateCascade(triggerId, { decay = BASE_GLOBAL_DECAY, startDistress = {}, nodes = NODES, edges = EDGES } = {}) {
+  const adjacency = new Map(nodes.map((node) => [node.id, []]));
+  for (const edge of edges) adjacency.get(edge.from)?.push(edge);
 
   const distress = {};
-  for (const node of NODES) distress[node.id] = startDistress[node.id] ?? 0;
+  for (const node of nodes) distress[node.id] = startDistress[node.id] ?? 0;
 
   const heap = new MinHeap();
   heap.push({ time: 0, node: triggerId, incoming: 1 - distress[triggerId], depth: 0 });

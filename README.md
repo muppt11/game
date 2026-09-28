@@ -1,10 +1,25 @@
-# Chain Reaction Bakery
+# Tanvi's Cupcake Rush
 
-A cozy pixel bakery game made with Vite and Kaboom.js for a game jam themed **Chain Reaction!**
+A cozy pixel cooking game made with Vite and Kaboom.js for the **Chain Reaction!** game jam. Think Papa's Cupcakeria meets Overcooked: customers line up with order tickets, and you run between stations to bake each cupcake before their patience runs out.
 
-One cupcake order sets off a chain reaction: every station's output powers the next, from the first egg to the final customer. Finish the chain, then break it on purpose in the **Chain Reaction Lab**, a small DebtRank-style contagion simulation where shocking one station cascades through the bakery's dependency graph. Score points for every station that goes critical, chase deeper chains, or play endless mode until the system collapses.
+## How it plays
 
-Accessibility: keyboard-operable station buttons, a colorblind-safe palette (with ✓ / ! / ✕ symbols on every node), a font size control, and an optional voice narrator.
+- **Make cupcakes to order:** Ingredients → Oven → Frosting → Toppings → (Packaging for to-go) → Serving. Click a station to walk there and pick an action; keyboard shortcuts are optional.
+- **Streaks:** serve customers back to back to build a streak. Every 3 in a row raises your score multiplier and cheers up the whole line. A customer who walks out breaks it.
+- **Secret combos:** certain flavor + frosting + topping combinations are worth much more. "Surprise me!" customers take anything, so they're your chance to experiment.
+- **Heat - the chain reaction:** stations heat up as you use them, especially Turbo bake. An overheated station jams and its heat cascades down the production line (modeled with DebtRank, the algorithm for contagion in financial networks). Cool stations down before the whole kitchen seizes up.
+- **Five days:** hit each day's coin goal to open tomorrow, and spend coins in the shop on upgrades and new ingredients between days.
+- **Bake-Off:** a two-player hot-seat mode. Same budget, same customers, highest score wins.
+- **Heat Lab:** a sandbox showing how heat spreads through the kitchen.
+
+Day 1 starts with a guided first order, and pop-up tips explain each new thing the first time it happens.
+
+## Accessibility
+
+- Font size control that scales every piece of text in the game (100-150%)
+- Colorblind-safe mode (Okabe-Ito palette) for every status color, ingredient, and badge; status is always shown with a symbol or text too
+- Optional voice narrator (Web Speech API)
+- Fully playable by mouse, touch, or keyboard; the game scales to fill the screen
 
 ## Development
 
@@ -22,13 +37,16 @@ npm run preview
 
 ## Structure
 
-- `src/main.js` contains the bakery scene, interactions, state, and controls.
-- `src/chainReaction.js` is the Chain Reaction Lab cascade engine and canvas renderer (tests: `node src/chainReaction.test.js`).
-- `src/narrator.js` is the optional Web Speech narrator.
-- `src/style.css` contains the interface and activity artwork.
-- `src/constants.js` defines stations, quest steps, and the color palette.
+- `src/main.js` wires the game together: flow between screens, settings, sound, and narration.
+- `src/game/shift.js` is one day's game logic (customers, cupcakes, streaks, heat); `src/game/run.js` handles days, goals, and the shop. Both are pure JS - run `node src/game/shift.test.js`.
+- `src/game/data.js` holds all the tuning: menu, combos, upgrades, and day difficulty.
+- `src/game/scene.js` draws the kitchen, the baker, and the action animations on the Kaboom canvas.
+- `src/game/ui.js`, `src/game/screens.js`, and `src/game/coach.js` are the HUD, the between-day screens, and the tutorial tips.
+- `src/chainReaction.js` is the cascade engine behind heat and the Heat Lab (`node src/chainReaction.test.js`).
+- `src/narrator.js`, `src/audio.js`, and `src/character.js` are the narrator, sound, and baker customization.
+- `src/style.css` and `src/game.css` are the styles.
+- `src/constants.js` holds the canvas size and base colors.
 - `src/kaboomCtx.js` configures Kaboom.
-- `src/utils.js` contains shared scene helpers.
 
 ## Credits
 
@@ -37,23 +55,20 @@ The project structure was inspired by [2d-portfolio-kaboom](https://github.com/J
 | Use | Track | Creator |
 | --- | --- | --- |
 | Background music | Funny Cartoon Music | Maksym Malko |
-| Placement | Water Splash | Freesound Community |
-| Ingredient and option selection | Simple Whoosh | Dragon Studio |
-| Character customization | Button Press | Dragon Studio |
-| Interface controls | Mouse Click | Matthew Vakaliuk |
-| Game start | 8-Bit Arcade Video Game Start Sound Effect | Freesound Community |
-| Quick Links | Aww | Adhimahadi |
-| Frosting and character completion | Shine | Faith Mulato |
+| Cupcake into the oven, tossing | Water Splash | Freesound Community |
+| Menus and cooling | Simple Whoosh | Dragon Studio |
+| Baker customization | Button Press | Dragon Studio |
+| Interface clicks | Mouse Click | Matthew Vakaliuk |
+| Shift start | 8-Bit Arcade Video Game Start Sound Effect | Freesound Community |
+| Customer walks out | Aww | Adhimahadi |
+| Secret combo, saving your baker | Shine | Faith Mulato |
 | Sprinkles | Salt Shaking | Freesound Community |
-| Packing | Placing Cardboard Box | Oxidvideos |
-| Bow wrapping | Plastic Pop | Freesound Community |
-| Customer delivery | Cartoon Eating Sound Effect | Betoelguapillo |
-| Conveyor belt | Bicycle Wheel FX | Freesound Community |
-| Batter dispenser | Bubble Pop 06 | Universfield |
-| Batter mixing | Slimy | Freesound Community |
-| Station completion | Level Up 05 | Universfield |
-| Finish Quest | Button Pressed | Freesound Community |
-| Baking | White Noise | Danevaer |
+| Boxing to-go orders | Placing Cardboard Box | Oxidvideos |
+| Serving a customer | Cartoon Eating Sound Effect | Betoelguapillo |
+| New customers, toppings, overheating | Bubble Pop 06 | Universfield |
+| Mixing batter and frosting | Slimy | Freesound Community |
+| Streak bonus | Level Up 05 | Universfield |
+| Closing time, shop purchases | Button Pressed | Freesound Community |
 | Oven timer | Bell Ring | Dragon Studio |
 
 Audio files are stored in `audio/`.

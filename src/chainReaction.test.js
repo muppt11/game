@@ -65,11 +65,11 @@ for (const node of NODES) {
 
 // 4. A shock at the terminal node (Serving has no outgoing edges) goes nowhere.
 {
-  assert(!EDGES.some((edge) => edge.from === "serving"), "serving has no outgoing edges");
-  const result = simulateCascade("serving");
-  const others = result.events.filter((event) => event.node !== "serving");
+  assert(!EDGES.some((edge) => edge.from === "bakeryDoor"), "serving has no outgoing edges");
+  const result = simulateCascade("bakeryDoor");
+  const others = result.events.filter((event) => event.node !== "bakeryDoor");
   assert(others.length === 0, "a shock at a terminal node should not cascade further");
-  NODES.filter((n) => n.id !== "serving").forEach((n) => {
+  NODES.filter((n) => n.id !== "bakeryDoor").forEach((n) => {
     assert(result.distress[n.id] === 0, `"${n.id}" untouched by a serving shock`);
   });
 }
@@ -88,7 +88,7 @@ for (const node of NODES) {
   NODES.forEach((node) => visit(node.id));
   assert(acyclic, "dependency graph must be acyclic");
 
-  const reached = new Set(simulateCascade("ingredients").events.map((event) => event.node));
+  const reached = new Set(simulateCascade("cafeTable").events.map((event) => event.node));
   NODES.forEach((node) => assert(reached.has(node.id), `"${node.id}" reachable from an ingredients shock`));
 }
 
@@ -99,7 +99,7 @@ for (const node of NODES) {
   const out = [];
   while (heap.size) out.push(heap.pop().time);
   assert(out.join() === "0,1,2,3,3,5,7,9", "min-heap pops in ascending time order");
-  const result = simulateCascade("ingredients");
+  const result = simulateCascade("cafeTable");
   assert(result.events.every((event, i) => i === 0 || event.time >= result.events[i - 1].time), "cascade events are time-ordered");
 }
 
@@ -112,8 +112,8 @@ for (const node of NODES) {
   assert(scoreCascade(four).bonus > 0, "4+ critical stations earn a big-cascade bonus");
 
   const critical = Object.fromEntries(NODES.map((n) => [n.id, 0]));
-  critical.serving = CRITICAL_THRESHOLD + 0.1;
-  const result = simulateCascade("serving", { startDistress: critical });
+  critical.bakeryDoor = CRITICAL_THRESHOLD + 0.1;
+  const result = simulateCascade("bakeryDoor", { startDistress: critical });
   assert(result.criticalOrder.length === 0, "re-shocking an already-critical node scores nothing");
 }
 
