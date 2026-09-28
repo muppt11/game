@@ -38,7 +38,7 @@ const TIPS = {
   surprise: { title: "Surprise me!", station: "bakeryDoor", text: "This customer takes any frosted cupcake - and pays extra. Try a secret combo for big points." },
   combo: { title: "★ Secret combo", station: "recipeBook", text: "That ticket is a secret combo, worth way more. Every combo you find is saved in the Recipe Book." },
   ovenReady: { title: "Ding!", station: "oven", text: "A cupcake is ready. Grab it soon - cupcakes burn if you leave them in the oven." },
-  heat: { title: "Heat is building", station: null, text: "Stations heat up as you use them - watch the bar and the ✓ / ! / ✕ badge. If one overheats, it jams." },
+  heat: { title: "Heat is building", station: null, text: "Stations heat up as you use them - watch the bar and the COOL / HOT / JAM heat label. If one overheats, it jams." },
   overheat: { title: "Overheated!", station: null, text: "The heat is spreading to the stations down the line. Walk over and click Cool it down before it jams everything." },
   chainReaction: { title: "Streak bonus!", station: "bakeryDoor", text: "Every 3 serves in a row raises your score multiplier and cheers up everyone in line. Keep the streak going!" },
   lost: { title: "Streak broken", station: "bakeryDoor", text: "A customer got tired of waiting and left, which breaks your streak. Watch the patience bars on the tickets." },

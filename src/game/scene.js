@@ -57,7 +57,7 @@ export const PALETTES = {
   },
 };
 export const itemColor = (entry, palette) => (palette.id === "colorblind" ? entry?.cbColor : null) ?? entry?.color;
-const HEAT_SYMBOL = { healthy: "✓", warning: "!", critical: "✕" };
+const HEAT_SYMBOL = { healthy: "COOL", warning: "HOT", critical: "JAM" };
 
 export function heatStatus(heat, jammed) {
   if (jammed || heat >= CRITICAL_THRESHOLD) return "critical";
@@ -537,8 +537,10 @@ export function createBakeryScene({
     onLeave();
   }
 
+  // Accept the next destination during an action; update() waits for it to finish.
+  // Dropping these clicks made fast station transitions appear stuck.
   function walkTo(stationId) {
-    if (!player || getShift()?.state.busy) return;
+    if (!player) return;
     if (atStation === stationId && !destination) {
       onArrive(stationId);
       return;
@@ -549,7 +551,7 @@ export function createBakeryScene({
   }
 
   function walkToPoint(point) {
-    if (!player || getShift()?.state.busy) return;
+    if (!player) return;
     leaveStation();
     targetStation = null;
     destination = k.vec2(clamp(point.x, 70, GAME_WIDTH - 70), clamp(point.y, 170, GAME_HEIGHT - 112));
@@ -648,9 +650,9 @@ export function createBakeryScene({
         k.drawRect({ pos: k.vec2(x, y - 38), width: 120, height: 6, anchor: "center", color: hex(COLORS.cocoa), opacity: 0.35 });
         k.drawRect({ pos: k.vec2(x - 60, y - 38), width: 120 * heat, height: 6, anchor: "left", color: hex(palette[status]) });
       }
-      const badge = k.vec2(x + 78, y - 60);
-      k.drawCircle({ pos: badge, radius: 11 * Math.max(1, scale * 0.9), color: hex(palette[status]), outline: { width: 2, color: hex(COLORS.cocoa) } });
-      text(HEAT_SYMBOL[status], badge.x, badge.y + 1, 13, palette.symbol[status]);
+      const badge = k.vec2(x + 60, y - 60);
+      k.drawRect({ pos: badge, width: 52, height: 20 * scale, anchor: "center", color: hex(palette[status]), outline: { width: 2, color: hex(COLORS.cocoa) } });
+      text(HEAT_SYMBOL[status], badge.x, badge.y + 1, 9, palette.symbol[status]);
       if (jammed) {
         const pulse = 0.22 + Math.sin(k.time() * 6) * 0.06;
         k.drawRect({ pos: k.vec2(x, y), width: 174, height: 126, anchor: "center", color: hex(palette.critical), opacity: pulse });

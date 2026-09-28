@@ -453,3 +453,7 @@ body[data-palette="colorblind"] .coach-kicker { color: #8a3f00; }
 .activity-package[data-package-step="3"] .activity-box-lid { background: linear-gradient(90deg, transparent 44%, #e98f9d 44% 56%, transparent 56%), #f2d6ad; }
 .activity-cupcake.has-sprinkles .frosting-swirl { background-image: radial-gradient(circle at 18% 38%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 58% 62%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 80% 28%, var(--topping-color) 0 2px, transparent 3px); }
 @media (max-width: 480px) { .activity-paper { padding: 15px; } .activity-workspace { padding: 5px 0; } }
+
+.recipe-progress li { padding: 0; }
+.recipe-progress button { color: inherit; background: transparent; border: 0; padding: 5px 7px; font: inherit; cursor: pointer; }
+.recipe-progress button:hover, .recipe-progress button:focus-visible { outline: 2px solid #bd5656; outline-offset: 1px; }

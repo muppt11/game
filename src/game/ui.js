@@ -70,26 +70,31 @@ export function createHud(elements) {
 
 // ---- Recipe progress: where the current cupcake is in the line ----------------
 
-export function renderRecipeProgress(list, shift) {
-  const { hands, oven, customers } = shift.state;
-  const item = hands.find((held) => held.stage !== "raw") ?? hands[0] ?? oven.find(Boolean)?.item ?? null;
+export function recipeStepsFor({ hands, oven, customers }) {
+  const held = hands.find((item) => item.stage !== "raw") ?? hands[0];
+  const item = held ?? oven.find(Boolean)?.item ?? null;
   const target = targetFor(item, customers);
-  const wantsTopping = target?.order ? target.order.topping !== "none" : false;
+  const wantsTopping = target?.order ? target.order.topping !== "none" : Boolean(item?.topping);
   const burnt = item?.stage === "burnt";
-  const steps = [
-    ["Batter", Boolean(item)],
-    [burnt ? "Burnt!" : "Bake", Boolean(item && (item.stage === "baked" || burnt))],
-    ["Frost", Boolean(item?.frosting)],
-    ...(wantsTopping ? [["Topping", Boolean(item?.topping)]] : []),
-    ...(target?.toGo ? [["Box", Boolean(item?.boxed)]] : []),
-    ["Serve", false],
-  ];
+  return { burnt, steps: [
+    ["Batter", Boolean(item), "cafeTable"],
+    [burnt ? "Burnt!" : "Bake", Boolean(item && item.stage === "baked"), "oven"],
+    ["Take out", Boolean(held && held.stage === "baked"), "oven"],
+    ["Frost", Boolean(item?.frosting), "frostingCounter"],
+    ...(wantsTopping ? [["Topping", Boolean(item?.topping), "decoratingCounter"]] : []),
+    ...(target?.toGo || item?.boxed ? [["Box", Boolean(item?.boxed), "deliveryStation"]] : []),
+    ["Serve", false, "bakeryDoor"],
+  ] };
+}
+
+export function renderRecipeProgress(list, shift) {
+  const { burnt, steps } = recipeStepsFor(shift.state);
   const currentIndex = burnt ? 1 : steps.findIndex(([, done]) => !done);
-  const html = steps.map(([label, done], index) => {
+  const html = steps.map(([label, done, station], index) => {
     const state = burnt && index === 1 ? "is-burnt" : done ? "is-done" : index === currentIndex ? "is-current" : "is-todo";
     const symbol = state === "is-burnt" ? "✕" : done ? "✓" : index === currentIndex ? "→" : "○";
     const spoken = state === "is-burnt" ? "burnt" : done ? "done" : index === currentIndex ? "next" : "to do";
-    return `<li class="${state}"><span aria-hidden="true">${symbol}</span>${label}<span class="visually-hidden"> (${spoken})</span></li>`;
+    return `<li class="${state}"><button type="button" data-station="${station}" aria-label="${label}: ${spoken}. Walk to ${stationById(station).title}"><span aria-hidden="true">${symbol}</span> ${label}<span class="visually-hidden"> (${spoken})</span></button></li>`;
   }).join("");
   if (list.innerHTML !== html) list.innerHTML = html;
 }

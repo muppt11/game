@@ -240,7 +240,7 @@ function bump(element, className) {
 function updateHeld() {
   const { hands, customers } = shift.state;
   heldText.textContent = hands.length ? hands.map(describeItem).join(" + ") : "Nothing";
-  heldHint.textContent = `→ ${hintFor(hands.find((item) => item.stage !== "raw") ?? hands[0], customers, shift.state.oven)}`;
+  heldHint.textContent = shift.state.busy ? `${shift.state.busy.label}… Click your next station; the baker will walk there when finished.` : `→ ${hintFor(hands.find((item) => item.stage !== "raw") ?? hands[0], customers, shift.state.oven)}`;
   renderRecipeProgress(recipeProgress, shift);
 }
 
@@ -705,6 +705,11 @@ soloButton.addEventListener("click", startSolo);
 $("#vs-button").addEventListener("click", startVsSetup);
 $("#how-to-button").addEventListener("click", () => howToDialog.showModal());
 $("#how-to-lab").addEventListener("click", openLab);
+
+recipeProgress.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-station]");
+  if (button && phase === "shift" && !activities.active) scene.walkTo(button.dataset.station);
+});
 
 const STATION_BY_KEY = Object.fromEntries(STATIONS.map((station) => [station.key, station.id]));
 document.addEventListener("keydown", (event) => {
