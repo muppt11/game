@@ -434,26 +434,28 @@ body[data-palette="colorblind"] .coach-kicker { color: #8a3f00; }
 .activity-controls { display: grid; gap: 10px; }
 .activity-controls button { min-height: 40px; }
 .activity-controls button:disabled { opacity: .4; cursor: not-allowed; }
-.activity-dispenser { position: relative; margin-top: 12px; text-align: center; font-size: 11px; }
-.activity-dispenser:not(.is-filled) .cupcake-top { opacity: 0; }
-.activity-nozzle { display: block; color: #6f4436; font-size: 30px; font-weight: bold; }
-.activity-dispenser.is-filled .activity-nozzle { color: #55723b; }
 .activity-decorating { padding: 12px; }
 .activity-piping-bag { width: 45px; margin: 0 auto; color: #e98f9d; font-size: 48px; line-height: 1; transform: rotate(-25deg); filter: drop-shadow(2px 2px #6f4436); }
-.activity-oven-row { display: flex; align-items: center; justify-content: space-around; gap: 8px; }
-.activity-tray { border-bottom: 7px solid #6f4436; cursor: grab; font-size: 10px; text-align: center; }
-.activity-tray.is-loaded { opacity: .25; }
-.activity-oven { position: static; width: 150px; height: auto; padding: 12px; border: 4px solid #6f4436; background: #bd5656; color: #fff8e8; text-align: center; font-size: 11px; }
-.activity-oven > div { min-height: 65px; display: grid; place-items: center; margin-top: 10px; border: 4px solid #3d2929; background: #3d2929; }
-.activity-oven.is-loaded > div { background: #e3a45a; color: #3d2929; }
-.activity-package { position: relative; width: 200px; min-height: 155px; margin: 10px auto; padding: 12px; border: 4px solid #6f4436; background: #f2d6ad; text-align: center; }
-.activity-package[data-package-step="0"] .activity-cupcake { opacity: .3; }
-.activity-box-lid { position: absolute; inset: 0 0 25px; display: none; place-items: center; background: #f2d6ad; border-bottom: 4px solid #6f4436; font-size: 18px; }
-.activity-package[data-package-step="2"] .activity-box-lid, .activity-package[data-package-step="3"] .activity-box-lid { display: grid; }
-.activity-package[data-package-step="3"] .activity-box-lid { background: linear-gradient(90deg, transparent 44%, #e98f9d 44% 56%, transparent 56%), #f2d6ad; }
 .activity-cupcake.has-sprinkles .frosting-swirl { background-image: radial-gradient(circle at 18% 38%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 58% 62%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 80% 28%, var(--topping-color) 0 2px, transparent 3px); }
 @media (max-width: 480px) { .activity-paper { padding: 15px; } .activity-workspace { padding: 5px 0; } }
 
 .recipe-progress li { padding: 0; }
 .recipe-progress button { color: inherit; background: transparent; border: 0; padding: 5px 7px; font: inherit; cursor: pointer; }
 .recipe-progress button:hover, .recipe-progress button:focus-visible { outline: 2px solid #bd5656; outline-offset: 1px; }
+
+/* Reuse the original dispenser, oven, tray, and gift-box artwork. */
+.station-tray { margin-top: 14px; }
+.station-tray .spare-cup::after { opacity: .25; }
+.station-baking .spare-cup::before, .station-baking .spare-cup::after { display: none; }
+.station-baking.is-loaded .oven-tray { left: auto; right: 30px; top: 25px; transform: scale(.53); cursor: default; animation: load-order-tray 420ms ease-out; }
+.station-baking .oven-tray { width: 110px; }
+@keyframes load-order-tray { from { transform: translateX(-120px) scale(1); } to { transform: scale(.53); } }
+.activity-package .package-cupcakes { grid-template-columns: 29px; left: 78px; }
+.activity-package .package-cupcakes[hidden] { display: none; }
+.activity-package.is-packed .package-lid { animation: close-order-box 360ms ease-out; }
+.activity-package.is-complete .package-ribbon, .activity-package.is-complete .package-bow, .activity-package.is-complete .package-bow-knot { animation: tie-order-bow 400ms ease-out; }
+@keyframes close-order-box { from { transform: rotate(-5deg); } to { transform: translateY(46px) rotate(0); } }
+@keyframes tie-order-bow { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .station-activity-dialog *, .station-activity-dialog *::after { animation: none !important; transition: none !important; }
+}
