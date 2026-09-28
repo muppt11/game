@@ -506,3 +506,19 @@ body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart
 .oven-rescue { width: 100%; padding: 10px; border: 2px solid #3d2929; background: #f0c96b; color: #3d2929; cursor: pointer; font-weight: bold; }
 .oven-rescue[hidden] { display: none; }
 body[data-palette="colorblind"] .batch-picker button[aria-pressed="true"] { background: #56b4e9; }
+
+/* Reserve space below the canvas for the recipe bar instead of covering stations. */
+#game-shell.is-playing {
+  overflow: visible;
+  width: min(1200px, calc(100vw - var(--page-gutter) - var(--page-gutter)), calc((100dvh - var(--page-gutter) - var(--page-gutter)) * 960 / (540 + var(--held-rows, 100))));
+  height: auto;
+  min-height: 0;
+  margin-bottom: calc(var(--held-rows, 100) * var(--shell-scale, 1) * 1px);
+}
+.held-strip {
+  top: 550px;
+  bottom: auto;
+  left: 0;
+  width: 960px;
+  max-width: none;
+}

@@ -117,6 +117,11 @@ new ResizeObserver(() => {
   document.documentElement.style.setProperty("--ui-zoom", String(Math.min(1.05, Math.max(0.7, scale))));
 }).observe(shell);
 
+// Include the recipe bar's actual wrapped height in the screen-fit calculation.
+new ResizeObserver(() => {
+  shell.style.setProperty("--held-rows", String($("#held-strip").offsetHeight + 10));
+}).observe($("#held-strip"));
+
 // Screen-reader status line, also read aloud when the narrator is on.
 function announce(message) {
   statusLive.textContent = message;
