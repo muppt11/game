@@ -30,7 +30,7 @@ export function dayIntroHtml(run, config) {
       <li>Secret combos and "Surprise me!" customers are where the big points are.</li></ul>`;
   }
   const tips = DAY_TIPS[run.day - 1] ?? [];
-  return `<p class="lead">Earn <strong>${config.goal}¢</strong> today to open again tomorrow.</p>
+  return `<p class="lead">Earn <strong>${config.goal}¢</strong> today to open again tomorrow. When the timer ends, visit the shop and continue to the next day.</p>
     <div class="goal-stars"><span>${stars(1)} ${config.goal}¢</span><span>${stars(2)} ${Math.ceil(config.goal * 1.5)}¢</span><span>${stars(3)} ${config.goal * 2}¢</span></div>
     ${tips.length ? `<ul class="tip-list">${tips.map((tip) => `<li>${tip}</li>`).join("")}</ul>` : ""}`;
 }

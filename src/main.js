@@ -203,7 +203,7 @@ const shiftLabel = () => (run.mode === "vs" ? "Bake-Off" : `Day ${run.day} · ${
 
 function narratorContext() {
   if (!shift) return "Welcome to Tanvi's Cupcake Rush.";
-  return `${shiftLabel()}. ${shift.state.coins} coins so far. ${hintFor(shift.state.hands[0], shift.state.customers)}.`;
+  return `${shiftLabel()}. ${shift.state.coins} coins so far. ${hintFor(shift.state.hands[0], shift.state.customers, shift.state.oven)}.`;
 }
 
 function showBanner(text, kind = "", duration = 1500) {
@@ -228,7 +228,7 @@ function bump(element, className) {
 function updateHeld() {
   const { hands, customers } = shift.state;
   heldText.textContent = hands.length ? hands.map(describeItem).join(" + ") : "Nothing";
-  heldHint.textContent = `→ ${hintFor(hands.find((item) => item.stage !== "raw") ?? hands[0], customers)}`;
+  heldHint.textContent = `→ ${hintFor(hands.find((item) => item.stage !== "raw") ?? hands[0], customers, shift.state.oven)}`;
   renderRecipeProgress(recipeProgress, shift);
 }
 
@@ -374,6 +374,7 @@ function gameFrame(dt) {
     return;
   }
   if (phase !== "shift" || !shift) return;
+  if (document.querySelector("dialog[open]")) return;
   shift.tick(dt);
   if (!shift || phase !== "shift") return;
   coach.frame();
@@ -429,6 +430,7 @@ function showDayIntro() {
     html: dayIntroHtml(run, config) + upgradesOwnedHtml(run),
     buttons: [
       { label: "Open the bakery →", primary: true, onClick: startShift },
+      ...(!vsMode && run.day === 1 ? [{ label: "Replay guided first order", onClick: () => { coach.resetTips(); startShift(); } }] : []),
       { label: "How to play", onClick: () => howToDialog.showModal() },
     ],
   });
@@ -677,6 +679,10 @@ function openBook() {
     cancel: () => resume("shift"),
   });
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) pause();
+});
 
 pauseButton.addEventListener("click", pause);
 soloButton.addEventListener("click", startSolo);

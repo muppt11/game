@@ -136,6 +136,8 @@ export function createCoach({ bubble, kicker, text, okButton, skipButton, scene,
     const { state } = shift;
     const customer = state.customers[0];
     const at = scene.atStation;
+    if (state.busy) return { title: "Working…", text: `${state.busy.label}. Wait for the action to finish, then follow the next step.`, station: state.busy.stationId };
+    if (state.jammed.size) return { title: "Cool the station", text: "Click the highlighted station, then Cool it down to continue.", station: [...state.jammed][0] };
     if (!customer) return { title: "Your first order", text: "A customer is on the way...", station: null };
     const order = customer.order;
     const who = customer.name;
@@ -162,6 +164,12 @@ export function createCoach({ bubble, kicker, text, okButton, skipButton, scene,
       return at === "frostingCounter"
         ? { title: "Step 4: Frost", text: `Click ${frosting} in the menu.`, station: "frostingCounter" }
         : { title: "Step 4: Frost", text: `${who} wants ${frosting.toLowerCase()}. Click the Frosting station.`, station: "frostingCounter" };
+    }
+    if (state.oven.some((slot) => slot?.item.stage === "burnt") && state.hands.length < state.handCapacity) {
+      return { title: "Recover the burnt cupcake", text: 'Click Oven → "Take out (burnt!)", then Ingredients → "Toss the burnt cupcake" to try again.', station: "oven" };
+    }
+    if (!held && state.display.some(Boolean)) {
+      return { title: "Pick up your cupcake", text: "Click Display Case and take your cupcake back to continue the order.", station: "displayCase" };
     }
     const ovenReady = state.oven.some((slot) => slot?.item.stage === "baked");
     if (ovenReady && state.hands.length < state.handCapacity) {

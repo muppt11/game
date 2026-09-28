@@ -77,15 +77,33 @@ export function chainLevelFor(chain) {
 }
 
 // What the player should do next with the cupcake in their hands.
-export function hintFor(item, customers = []) {
-  if (!item) return "Click Ingredients to grab a flavor";
+// Prefer an order compatible with everything already added to this cupcake.
+export function targetFor(item, customers = []) {
+  if (!item) return customers[0];
+  return customers.find((customer) => customer.order
+    && customer.order.flavor === item.flavor
+    && (!item.frosting || customer.order.frosting === item.frosting)
+    && (!item.topping || customer.order.topping === item.topping))
+    ?? customers.find((customer) => !customer.order);
+}
+
+export function hintFor(item, customers = [], oven = []) {
+  if (!item) {
+    if (oven.some((slot) => slot?.item.stage === "baked")) return "Click Oven → Take out the baked cupcake";
+    if (oven.some((slot) => slot?.item.stage === "burnt")) return "Click Oven → Take out (burnt!), then Ingredients → Toss";
+    if (oven.some((slot) => slot?.item.stage === "baking")) return "Baking… wait for the ding, then click Oven → Take out";
+    const target = targetFor(null, customers);
+    return target?.order ? `Click Ingredients → ${FLAVORS[target.order.flavor].name} batter for ${target.name}` : "Click Ingredients to grab a flavor";
+  }
   if (item.stage === "burnt") return "Burnt! Click Ingredients to toss it";
-  if (item.stage === "raw") return "Click the Oven to bake it";
-  if (!item.frosting) return "Click Frosting to frost it";
-  const needsBox = !item.boxed && customers.some((customer) => customer.toGo && matchesOrder({ ...item, boxed: true }, customer));
-  if (needsBox) return "Click Packaging to box it for the to-go order";
-  if (!item.topping) return "Click Toppings to add one, or Serving to serve it plain";
-  return "Click Serving to hand it over";
+  if (item.stage === "raw") return "Click the Oven → Bake";
+  const target = targetFor(item, customers);
+  if (!target && customers.length) return "No matching order. Store it in Display Case, or Ingredients → Toss and start again";
+  if (!item.frosting) return target?.order ? `Click Frosting → ${FROSTINGS[target.order.frosting].name} for ${target.name}` : "Click Frosting to frost it";
+  if (target?.order && target.order.topping !== "none" && !item.topping) return `Click Toppings → ${TOPPINGS[target.order.topping].name} for ${target.name}`;
+  if (target?.toGo && !item.boxed) return "Click Packaging → Box it to go";
+  if (target) return `Click Serving → Serve ${target.name}`;
+  return "Store it in Display Case while you wait for a customer";
 }
 
 export function createShift({ day, seed, menu, upgrades = {}, discovered = [], onEvent = () => {} }) {

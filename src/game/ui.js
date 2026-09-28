@@ -2,7 +2,7 @@
 // panel, and the one reusable dialog every between-shift screen is drawn in.
 
 import { COMBOS, FLAVORS, FROSTINGS, RULES, TOPPINGS, stationById } from "./data.js";
-import { chainLevelFor } from "./shift.js";
+import { chainLevelFor, targetFor } from "./shift.js";
 
 export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 
@@ -73,8 +73,8 @@ export function createHud(elements) {
 export function renderRecipeProgress(list, shift) {
   const { hands, oven, customers } = shift.state;
   const item = hands.find((held) => held.stage !== "raw") ?? hands[0] ?? oven.find(Boolean)?.item ?? null;
-  const target = item ? customers.find((customer) => !customer.order || customer.order.flavor === item.flavor) : customers[0];
-  const wantsTopping = target?.order ? target.order.topping !== "none" : true;
+  const target = targetFor(item, customers);
+  const wantsTopping = target?.order ? target.order.topping !== "none" : false;
   const burnt = item?.stage === "burnt";
   const steps = [
     ["Batter", Boolean(item)],
@@ -210,8 +210,10 @@ export function createStationPanel({ panel, kicker, title, status, actions, onAc
       const list = shift.stationActions(stationId);
       const statusText = stationStatus(shift, stationId);
       const busy = Boolean(shift.state.busy);
-      const next = JSON.stringify([busy, statusText, list.map((entry) => [entry.id, entry.label, entry.detail, entry.enabled, entry.reason])]);
+      const next = JSON.stringify([busy, list.map((entry) => [entry.id, entry.label, entry.detail, entry.enabled, entry.reason])]);
       panel.classList.toggle("is-busy", busy && shift.state.busy.stationId === stationId);
+      status.textContent = statusText;
+      status.hidden = !statusText;
       if (next === signature) return;
       signature = next;
       const focusedAction = document.activeElement?.closest?.("#station-actions button")?.dataset.action;

@@ -4,7 +4,7 @@
 import { simulateCascade } from "../chainReaction.js";
 import { COMBOS, DAYS, FULL_MENU, KITCHEN_EDGES, KITCHEN_NODES, RULES, STARTING_MENU, cupcakeValue } from "./data.js";
 import { buy, createRun, dayConfig, finishDay, shopItems, starsFor } from "./run.js";
-import { chainLevelFor, createShift, generateCustomers, hintFor, matchesOrder } from "./shift.js";
+import { chainLevelFor, createShift, generateCustomers, hintFor, matchesOrder, targetFor } from "./shift.js";
 
 let passed = 0;
 let failed = 0;
@@ -248,6 +248,26 @@ for (const combo of COMBOS) {
   const item = { flavor: combo.flavor, frosting: combo.frosting, topping: combo.topping };
   assert(FULL_MENU.flavors.includes(combo.flavor) && FULL_MENU.frostings.includes(combo.frosting) && FULL_MENU.toppings.includes(combo.topping), `${combo.name} is makeable`);
   assert(cupcakeValue(item) > cupcakeValue({ ...item, topping: "none" }), `${combo.name} beats a plain version`);
+}
+
+// Guidance follows compatible orders and never sends an empty-handed baker
+// back to Ingredients while their cupcake is still in the oven.
+{
+  const item = { stage: "baked", flavor: "vanilla", frosting: "chocolate", topping: null, boxed: false };
+  const customers = [
+    { name: "Wrong frosting", order: { flavor: "vanilla", frosting: "vanilla", topping: "none" } },
+    { name: "Right order", order: { flavor: "vanilla", frosting: "chocolate", topping: "sprinkles" }, toGo: true },
+  ];
+  assert(targetFor(item, customers) === customers[1], "target respects frosting, not just flavor");
+  assert(/Toppings/.test(hintFor(item, customers)), "add required topping before boxing");
+  const topped = { ...item, topping: "sprinkles" };
+  assert(/Packaging/.test(hintFor(topped, customers)), "box matching to-go order after topping");
+  assert(/Serve Right order/.test(hintFor({ ...topped, boxed: true }, customers)), "name the matching customer");
+  assert(/No matching order/.test(hintFor({ ...item, flavor: "lemon" }, customers)), "explain incompatible cupcake recovery");
+  for (const stage of ["baking", "baked", "burnt"]) {
+    assert(/Oven/.test(hintFor(null, customers, [{ item: { stage } }])), `direct player to ${stage} cupcake in oven`);
+  }
+  assert(/Serving/.test(hintFor(item, [{ name: "Plain", order: { flavor: "vanilla", frosting: "chocolate", topping: "none" } }])), "plain order goes directly to Serving");
 }
 
 console.log(`${passed} passed, ${failed} failed`);
