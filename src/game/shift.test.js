@@ -224,7 +224,7 @@ for (const saver of [0, 1]) {
 // 12. Runs: the shop, goals, and winning.
 {
   const solo = createRun({ mode: "solo", seed: 5 });
-  assert(solo.coins === 0 && dayConfig(solo) === DAYS[0], "solo run starts broke on day 1");
+  assert(solo.coins === 0 && solo.day === 1 && dayConfig(solo).goal === DAYS[0].goal, "solo run starts broke on day 1");
   solo.coins = 100;
   assert(buy(solo, "skates") && solo.coins === 60 && solo.upgrades.skates === 1, "buying an upgrade spends coins");
   assert(!buy(solo, "skates"), "single-level upgrades max out");

@@ -219,12 +219,28 @@ function drawStationIcon(stationId, position) {
   }
 
   if (stationId === "bakeryDoor") {
-    addIconRect(46, 52, k.vec2(0, 1), COLORS.cocoa);
-    addIconRect(36, 44, k.vec2(0, 4), COLORS.red);
-    addIconRect(22, 15, k.vec2(0, -9), COLORS.cocoa);
-    addIconRect(15, 8, k.vec2(0, -9), COLORS.pink);
-    addIconRect(4, 4, k.vec2(11, 9), "#f7dfa0", 1);
-    addIconRect(20, 4, k.vec2(0, 22), "#f7dfa0", 1);
+    // A cupcake travels along the roller belt to the waiting customer.
+    // Outlines and the belt's shape make this readable in either palette.
+    for (const x of [-35, 13]) {
+      addIconRect(7, 18, k.vec2(x, 25), COLORS.brown);
+      addIconRect(3, 14, k.vec2(x, 25), COLORS.parchment, 0, 4);
+    }
+    addIconRect(78, 21, k.vec2(-11, 12), COLORS.cocoa);
+    addIconRect(72, 15, k.vec2(-11, 12), COLORS.brown, 0, 4);
+    for (const x of [-40, -26, -12, 2, 16]) {
+      addIconCircle(5, k.vec2(x, 12), COLORS.parchment, 1, 5);
+      addIconCircle(2, k.vec2(x, 12), COLORS.cocoa, 0, 6);
+    }
+    addIconRect(76, 4, k.vec2(-11, 0), COLORS.parchment, 1, 5);
+    drawMiniCupcake(-18, -15, 1.05, COLORS.cream);
+
+    addIconRect(25, 27, k.vec2(43, -18), COLORS.cocoa, 0, 4);
+    addIconRect(17, 19, k.vec2(43, -15), "#d99a78", 1, 5);
+    addIconRect(3, 3, k.vec2(39, -16), COLORS.cocoa, 0, 6);
+    addIconRect(3, 3, k.vec2(47, -16), COLORS.cocoa, 0, 6);
+    addIconRect(5, 2, k.vec2(43, -9), COLORS.cocoa, 0, 6);
+    addIconRect(25, 31, k.vec2(43, 12), "#7695a8", 2, 4);
+    addIconRect(12, 7, k.vec2(27, 4), "#d99a78", 1, 6);
     return;
   }
 }

@@ -1,7 +1,7 @@
 // HTML for the between-shift screens, built from run and shift data.
 
 import { COMBOS, DAYS, FLAVORS, FROSTINGS, TOPPINGS, UPGRADES } from "./data.js";
-import { shopItems, totalDays } from "./run.js";
+import { DIFFICULTIES, normalizeDifficulty, shopItems, totalDays } from "./run.js";
 import { escapeHtml } from "./ui.js";
 
 export const DAY_TITLES = ["Opening Day", "Rush Hour", "The Regulars", "Critic Week", "Grand Finale"];
@@ -24,13 +24,17 @@ const DAY_TIPS = [
 const stars = (count, max = 3) => `<span class="stars" aria-label="${count} of ${max} stars">${"★".repeat(count)}<span class="stars-empty">${"★".repeat(max - count)}</span></span>`;
 
 export function dayIntroHtml(run, config) {
+  const difficulty = DIFFICULTIES[normalizeDifficulty(run.difficulty)];
+  const patience = `<p class="difficulty-note"><strong>${difficulty.label}</strong> · Customer patience: ${config.patience} seconds (until closing).${run.upgrades.jukebox ? " Your Jukebox adds another 25%." : ""}</p>`;
   if (run.mode === "vs") {
     return `<p class="lead">You have <strong>${config.length} seconds</strong>. Both bakers get the exact same customers - highest score wins.</p>
+      ${patience}
       <ul class="tip-list"><li>Every serve in a row grows your streak multiplier - don't let anyone walk out.</li>
       <li>Secret combos and "Surprise me!" customers are where the big points are.</li></ul>`;
   }
   const tips = DAY_TIPS[run.day - 1] ?? [];
   return `<p class="lead">Earn <strong>${config.goal}¢</strong> today to open again tomorrow. When the timer ends, visit the shop and continue to the next day.</p>
+    ${patience}
     <div class="goal-stars"><span>${stars(1)} ${config.goal}¢</span><span>${stars(2)} ${Math.ceil(config.goal * 1.5)}¢</span><span>${stars(3)} ${config.goal * 2}¢</span></div>
     ${tips.length ? `<ul class="tip-list">${tips.map((tip) => `<li>${tip}</li>`).join("")}</ul>` : ""}`;
 }

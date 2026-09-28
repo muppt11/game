@@ -435,7 +435,15 @@ body[data-palette="colorblind"] .coach-kicker { color: #8a3f00; }
 .activity-controls button { min-height: 40px; }
 .activity-controls button:disabled { opacity: .4; cursor: not-allowed; }
 .activity-decorating { padding: 12px; }
-.activity-piping-bag { width: 45px; margin: 0 auto; color: #e98f9d; font-size: 48px; line-height: 1; transform: rotate(-25deg); filter: drop-shadow(2px 2px #6f4436); }
+.activity-decorating.is-frosting { position: relative; padding-top: 65px; }
+.activity-piping-bag { position: absolute; z-index: 4; top: 0; left: calc(50% + 1px); width: 90px; height: 100px; padding: 0; border: 0; background: transparent; cursor: pointer; transform-origin: 15% 90%; }
+.activity-piping-bag svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.activity-piping-bag.has-piped { animation: pipe-icing 350ms ease-out; }
+.activity-piping-bag:disabled { cursor: default; }
+@keyframes pipe-icing { 50% { transform: scale(.92, 1.04) rotate(-5deg); } }
+.serving-choices { margin-top: 16px; }
+.serving-choices small { display: block; margin-top: 5px; font-size: .8em; font-weight: normal; }
+.station-activity-dialog [data-next-order][hidden] { display: none; }
 .activity-cupcake.has-sprinkles .frosting-swirl { background-image: radial-gradient(circle at 18% 38%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 58% 62%, var(--topping-color) 0 2px, transparent 3px), radial-gradient(circle at 80% 28%, var(--topping-color) 0 2px, transparent 3px); }
 @media (max-width: 480px) { .activity-paper { padding: 15px; } .activity-workspace { padding: 5px 0; } }
 
@@ -482,7 +490,7 @@ body[data-palette="colorblind"] .station-activity-dialog [data-decoration="cherr
 .station-activity-dialog .frosting-meter { margin-top: 12px; }
 .station-activity-dialog .serving-scene { --delivery-distance: 230px; }
 .station-activity-dialog .serving-package { transition: none; }
-.station-activity-dialog .is-delivering .serving-package { animation: deliver-order 700ms linear forwards; }
+.station-activity-dialog .is-delivering .serving-package { animation: deliver-order 1800ms linear forwards; }
 .station-activity-dialog .is-delivered .serving-package { transform: translateX(var(--delivery-distance)); }
 @keyframes deliver-order { from { transform: translateX(0); } to { transform: translateX(var(--delivery-distance)); } }
 .station-activity-dialog .unboxed-order { background: transparent; border: 0; box-shadow: none; }

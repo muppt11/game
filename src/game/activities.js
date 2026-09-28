@@ -1,7 +1,7 @@
 // Hands-on station tasks use the current shift's chosen recipe and inventory.
 // They prepare an action; only confirmation commits it through shift.perform.
-import { FLAVORS, FROSTINGS, TOPPINGS, stationById } from './data.js';
-import { targetFor } from './shift.js';
+import { FLAVORS, FROSTINGS, TOPPINGS, describeCupcake, stationById } from './data.js';
+import { hintFor, targetFor } from './shift.js';
 import { escapeHtml } from './ui.js';
 
 export const INGREDIENTS = ['egg', 'butter', 'flour', 'sugar'];
@@ -87,16 +87,16 @@ export function createStationActivities({ host, onCommit, onNavigate, sound }) {
         <div class="oven-tray" draggable="${!p.ready}" data-tray aria-label="Tray with ${task.count} cupcakes">${Array.from({ length: 4 }, (_, i) => `<span class="oven-cup ${i >= task.count ? 'spare-cup' : ''}"></span>`).join('')}</div></div>
         <p class="baking-feedback">${p.ready ? 'Tray loaded. Press Start baking to switch on the oven.' : 'Drag the filled tray into the oven, or use the button below.'}</p></div>`;
     }
-    if (p.kind === 'serve') return `<div class="serving-interaction ${task.mode === 'serving' ? 'is-delivering' : ''}" style="--bow-color:${bowColor(item.bowColor ?? 'berry')}"><div class="serving-scene">
+    if (p.kind === 'serve') return `<div class="serving-interaction ${task.mode === 'serving' ? 'is-delivering' : ''}" style="--bow-color:${bowColor(item?.bowColor ?? 'berry')}"><div class="serving-scene">
       <div class="customer-speech">Thank you!</div><div class="serving-customer" aria-label="Your customer"><span class="customer-hair"></span><span class="customer-face"><i></i><i></i></span><span class="customer-body"></span></div>
-      <div class="serving-package ${item.boxed ? '' : 'unboxed-order'}">${item.boxed ? '<span class="serving-ribbon ribbon-v"></span><span class="serving-ribbon ribbon-h"></span><span class="serving-bow serving-bow-left"></span><span class="serving-bow serving-bow-right"></span><span class="serving-bow-knot"></span>' : cupcake(item)}</div>
+      ${item ? `<div class="serving-package ${item.boxed ? '' : 'unboxed-order'}">${item.boxed ? '<span class="serving-ribbon ribbon-v"></span><span class="serving-ribbon ribbon-h"></span><span class="serving-bow serving-bow-left"></span><span class="serving-bow serving-bow-right"></span><span class="serving-bow-knot"></span>' : cupcake(item)}</div>` : ''}
       <div class="conveyor-belt"><span class="belt-surface"></span><span class="belt-leg leg-left"></span><span class="belt-leg leg-right"></span></div></div></div>`;
     if (p.kind === 'box') return `<div class="packaging-interaction activity-package ${p.step >= 2 ? 'is-packed' : ''} ${p.ready ? 'is-complete' : ''} ${item.topping === 'sprinkles' ? 'has-sprinkles' : ''}" data-package-step="${p.step}" data-bow="${task.bow}" data-decoration="${['cherry', 'candle', 'heart'].includes(item.topping) ? item.topping : 'none'}" style="--bow-color:${bowColor(task.bow)};--frosting-color:${color(FROSTINGS[item.frosting])};--frosting-border:#6f4436">
       <fieldset class="bow-picker"><legend>Ribbon color (optional)</legend><div>${['berry', 'sage', 'gold'].map(id => `<button type="button" data-bow-choice="${id}" aria-pressed="${task.bow === id}" class="${task.bow === id ? 'is-selected' : ''}"><span class="bow-swatch bow-${id}"></span>${id}</button>`).join('')}</div></fieldset>
       <div class="package-scene"><div class="package-box"><div class="package-cupcakes" ${p.step === 0 ? 'hidden' : ''}><span><span class="package-frosting"><b></b><b></b><b></b></span><i></i></span></div><span class="package-lid"></span><span class="package-ribbon ribbon-vertical"></span><span class="package-ribbon ribbon-horizontal"></span><span class="package-bow bow-left"></span><span class="package-bow bow-right"></span><span class="package-bow-knot"></span></div><div class="ribbon-preview is-visible"><small>RIBBON PREVIEW</small><span class="ribbon-preview-box"><i></i></span></div></div>
       <p class="packaging-feedback">${p.step === 0 ? 'Empty box' : p.step === 1 ? 'Cupcake inside ✓' : p.step === 2 ? 'Lid closed ✓' : 'Ribbon tied ✓'}</p></div>`;
     const frosted = p.kind === 'frost' ? { ...item, frosting: value } : item;
-    return `<div class="activity-decorating">${p.kind === 'frost' ? '<div class="activity-piping-bag" aria-hidden="true">▼</div>' : ''}${cupcake(frosted, p.kind === 'frost' ? p.step : 3, p.kind === 'top' && p.ready ? value : item?.topping, p.kind === 'top' && p.ready)}${p.kind === 'frost' ? `<div class="frosting-meter" role="progressbar" aria-label="Frosting swirls" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${p.step}"><span style="width:${p.step / 3 * 100}%"></span></div><p class="frosting-feedback">${p.step} of 3 swirls</p>` : ''}</div>`;
+    return `<div class="activity-decorating ${p.kind === 'frost' ? 'is-frosting' : ''}">${p.kind === 'frost' ? `<button type="button" class="activity-piping-bag ${p.step ? 'has-piped' : ''}" data-step ${p.ready ? 'disabled' : ''} aria-label="${p.ready ? 'Frosting complete' : p.label}" style="--icing-color:${color(FROSTINGS[value])}"><svg viewBox="0 0 120 130" aria-hidden="true"><g stroke="#6f4436" stroke-width="4" stroke-linejoin="round"><path d="M73 22 67 7 85 12 99 5 103 22 91 32Z" fill="#fff8e8"/><path d="M75 29C48 26 20 48 22 69L53 105C76 94 101 62 92 36Z" fill="var(--icing-color)"/><path d="M72 36Q44 39 34 64" fill="none" stroke="#fff8e8" stroke-width="6"/><path d="M25 76 14 104 28 117 51 100Z" fill="#c5d2d7"/><path d="m14 104-7 17 10 5 11-9Z" fill="#8c9aa3"/><path d="m76 25 19 9-3 9-19-9Z" fill="#e69f00"/></g></svg></button>` : ''}${cupcake(frosted, p.kind === 'frost' ? p.step : 3, p.kind === 'top' && p.ready ? value : item?.topping, p.kind === 'top' && p.ready)}${p.kind === 'frost' ? `<div class="frosting-meter" role="progressbar" aria-label="Frosting swirls" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${p.step}"><span style="width:${p.step / 3 * 100}%"></span></div><p class="frosting-feedback">${p.step} of 3 swirls</p>` : ''}</div>`;
   }
   function render() {
     const { progress: p, action, stationId, item, value } = task;
@@ -112,10 +112,43 @@ export function createStationActivities({ host, onCommit, onNavigate, sound }) {
     const order = customer.order;
     return `<p class="activity-order">${escapeHtml(customer.name)}: ${order ? `${FLAVORS[order.flavor].name} cake · ${FROSTINGS[order.frosting].name} frosting · ${TOPPINGS[order.topping].name}` : 'Any frosted cupcake'}${customer.toGo ? ' · Box to go' : ''}</p>`;
   }
+  function servingSignature(shift, actions) {
+    return JSON.stringify([!!shift.state.busy, shift.state.customers.map(customer => customer.id),
+      shift.state.oven.map(slot => slot?.item.stage),
+      actions.map(({ id, enabled, reason }) => [id, enabled, reason])]);
+  }
+  function renderServing() {
+    const hadFocus = dialog.contains(document.activeElement);
+    const focusedAction = document.activeElement?.dataset.servingAction;
+    const focusedClose = document.activeElement?.classList.contains('dialog-close');
+    const { shift } = task;
+    const actions = shift.stationActions('bakeryDoor');
+    const ready = actions.find(action => action.enabled && action.id.startsWith('serve:'));
+    task.item = ready ? shift.state.hands.find(item => String(item.id) === ready.id.split(':')[2]) : null;
+    task.value = ready?.id.split(':')[1];
+    task.signature = servingSignature(shift, actions);
+    const hint = ready ? 'Choose a customer below to send their cupcake along the belt.' : shift.state.jammed.has('bakeryDoor') ? 'The belt overheated. Cool it down below, then serve your order.' : hintFor(shift.state.hands[0], shift.state.customers, shift.state.oven);
+    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><button type="button" class="dialog-close" data-cancel aria-label="Close station and return to kitchen">×</button><p class="dialog-kicker">SERVING</p><h2 id="activity-title">The serving belt</h2><p class="activity-clock"></p><button type="button" class="oven-rescue" data-oven-rescue hidden>Oven ready — collect cupcakes</button>${orderReminder()}<p class="activity-instruction" role="status">${escapeHtml(hint)}</p>${workspace()}<div class="activity-controls serving-choices">${actions.filter(action => action.id !== 'noMatch').map(action => `<button type="button" class="${action.id.startsWith('serve:') ? 'start-button' : 'default-button'}" data-serving-action="${escapeHtml(action.id)}" ${action.enabled && !shift.state.busy ? '' : 'disabled'}>${escapeHtml(action.label)}${action.id.startsWith('serve:') ? ` → Send down belt<small>${escapeHtml(describeCupcake(shift.state.hands.find(item => String(item.id) === action.id.split(':')[2])))}</small>` : ''}</button>`).join('')}<button type="button" class="default-button" data-cancel>Back to kitchen</button></div></div>`;
+    if (hadFocus) {
+      const previous = focusedAction && dialog.querySelector(`[data-serving-action="${CSS.escape(focusedAction)}"]:not(:disabled)`);
+      (previous || dialog.querySelector(focusedClose ? '.dialog-close' : '.activity-controls [data-cancel]')).focus({ preventScroll: true });
+    }
+  }
+  function openServing(shift) {
+    if (task || shift.state.busy || shift.state.ended) return false;
+    task = { shift, stationId: 'bakeryDoor', progress: createActivityProgress('serve'), mode: 'serve-select' };
+    renderServing();
+    dialog.showModal();
+    update();
+    (dialog.querySelector('[data-serving-action]:not(:disabled)') ?? dialog.querySelector('.activity-controls [data-cancel]')).focus();
+    return true;
+  }
   function renderLive(mode) {
     task.mode = mode;
-    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><button type="button" class="dialog-close" data-cancel aria-label="Close station and return to kitchen">×</button><p class="dialog-kicker">${mode === 'oven' ? 'OVEN' : 'SERVING'}</p><h2 id="activity-title">${mode === 'oven' ? 'Bake your cupcake' : 'Deliver the order'}</h2><p class="activity-clock"></p><button type="button" class="oven-rescue" data-oven-rescue hidden>Oven ready — collect cupcakes</button><p class="activity-instruction" role="status"></p>${workspace()}${mode === 'oven' ? '<div class="bake-progress" role="progressbar" aria-label="Baking progress" aria-valuemin="0" aria-valuemax="100"><span></span></div><button class="start-button" type="button" data-collect disabled>Loading oven…</button>' : ''}<button class="default-button" type="button" data-cancel>Back to kitchen</button></div>`;
+    if (mode === 'serving') task.deliveryStarted = task.shift.state.time;
+    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><button type="button" class="dialog-close" data-cancel aria-label="Close station and return to kitchen">×</button><p class="dialog-kicker">${mode === 'oven' ? 'OVEN' : 'SERVING'}</p><h2 id="activity-title">${mode === 'oven' ? 'Bake your cupcake' : 'Deliver the order'}</h2><p class="activity-clock"></p><button type="button" class="oven-rescue" data-oven-rescue hidden>Oven ready — collect cupcakes</button><p class="activity-instruction" role="status"></p>${workspace()}${mode === 'oven' ? '<div class="bake-progress" role="progressbar" aria-label="Baking progress" aria-valuemin="0" aria-valuemax="100"><span></span></div><button class="start-button" type="button" data-collect disabled>Loading oven…</button>' : '<button class="start-button" type="button" data-next-order hidden>Next customer → Ingredients</button>'}<button class="default-button" type="button" data-cancel>Back to kitchen</button></div>`;
     update();
+    dialog.querySelector('.default-button[data-cancel]').focus({ preventScroll: true });
   }
   function stop() {
     task = null;
@@ -124,6 +157,13 @@ export function createStationActivities({ host, onCommit, onNavigate, sound }) {
   function update() {
     if (!task) return;
     const { shift } = task;
+    if (task.mode === 'serve-select') {
+      const actions = shift.stationActions('bakeryDoor');
+      const signature = servingSignature(shift, actions);
+      if (signature !== task.signature) renderServing();
+    }
+    const beltScene = dialog.querySelector('.serving-scene');
+    if (beltScene) beltScene.style.setProperty('--delivery-distance', `${Math.max(0, beltScene.clientWidth - 130)}px`);
     const seconds = Math.max(0, Math.ceil(shift.state.length - shift.state.clock));
     const clock = dialog.querySelector('.activity-clock');
     const text = shift.state.hold ? 'Guided order · clock and patience paused' : `Shift: ${seconds}s remaining · customers are waiting`;
@@ -148,11 +188,14 @@ export function createStationActivities({ host, onCommit, onNavigate, sound }) {
     }
     if (task.mode === 'serving') {
       const delivered = !shift.state.hands.some(item => item.id === task.item.id);
-      const busy = !!shift.state.busy;
+      const travelling = shift.state.time - task.deliveryStarted < 1.8 && (delivered || !!shift.state.busy);
       const view = dialog.querySelector('.serving-interaction');
-      view.classList.toggle('is-delivering', busy);
-      view.classList.toggle('is-delivered', delivered);
-      dialog.querySelector('.activity-instruction').textContent = delivered ? 'Order delivered! Back to the kitchen for your next customer.' : busy ? 'Sending the order down the belt…' : 'The customer left or the station jammed. Your cupcake is still in your hands.';
+      view.classList.toggle('is-delivering', travelling);
+      view.classList.toggle('is-delivered', delivered && !travelling);
+      const next = dialog.querySelector('[data-next-order]');
+      next.hidden = !delivered || travelling;
+      next.textContent = shift.state.hands.length ? 'Continue with held cupcakes →' : 'Next customer → Ingredients';
+      dialog.querySelector('.activity-instruction').textContent = travelling ? 'Sending the order down the belt…' : delivered ? 'Order delivered! Ready for the next customer.' : 'The customer left or the station jammed. Your cupcake is still in your hands.';
     }
 
   }
@@ -169,6 +212,26 @@ export function createStationActivities({ host, onCommit, onNavigate, sound }) {
     const button = event.target.closest('button');
     if (!task || !button || button.disabled) return;
     if (button.hasAttribute('data-cancel')) return stop();
+    if (button.hasAttribute('data-next-order')) {
+      const shift = task.shift;
+      stop();
+      if (shift.stationActions('bakeryDoor').some(action => action.enabled && action.id.startsWith('serve:'))) openServing(shift);
+      else if (!shift.state.hands.length) onNavigate('cafeTable');
+      return;
+    }
+    if (button.dataset.servingAction) {
+      const id = button.dataset.servingAction;
+      const action = task.shift.stationActions('bakeryDoor').find(entry => entry.id === id && entry.enabled);
+      if (!action) return;
+      if (id.startsWith('serve:')) {
+        task.action = action;
+        task.value = id.split(':')[1];
+        task.item = task.shift.state.hands.find(item => String(item.id) === id.split(':')[2]);
+        if (onCommit('bakeryDoor', id)) renderLive('serving');
+      } else if (onCommit('bakeryDoor', id)) update();
+      return;
+    }
+
     if (button.hasAttribute('data-oven-rescue')) {
       stop();
       onNavigate('oven');
@@ -230,7 +293,7 @@ export function createStationActivities({ host, onCommit, onNavigate, sound }) {
     if (event.target.closest('[data-oven]') && value === 'tray') change();
   });
   return {
-    get active() { return task !== null; }, stop, update,
+    get active() { return task !== null; }, stop, update, openServing,
     start(shift, stationId, actionId) {
       if (task || shift.state.busy || shift.state.ended) return false;
       const progress = createActivityProgress(actionId);

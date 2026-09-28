@@ -6,13 +6,22 @@ import { BAKE_OFF_BUDGET, BAKE_OFF_DAY, DAYS, FLAVORS, FROSTINGS, FULL_MENU, STA
 const MENU_TABLES = { flavors: FLAVORS, frostings: FROSTINGS, toppings: TOPPINGS };
 const MENU_KIND_LABEL = { flavors: "batter", frostings: "frosting", toppings: "topping" };
 
+export const DIFFICULTIES = Object.freeze({
+  easy: Object.freeze({ label: "Easy", patienceMultiplier: 2, description: "More time to bake: customers wait twice as long, until closing." }),
+  medium: Object.freeze({ label: "Medium", patienceMultiplier: 1.5, description: "A little rush: customers get 50% more waiting time, until closing." }),
+  hard: Object.freeze({ label: "Hard", patienceMultiplier: 1, description: "The original customer timers for a busy bakery challenge." }),
+});
+
+export const normalizeDifficulty = (value) => Object.hasOwn(DIFFICULTIES, value) ? value : "easy";
+
 const copyMenu = (menu) => ({ flavors: [...menu.flavors], frostings: [...menu.frostings], toppings: [...menu.toppings] });
 
-export function createRun({ mode = "solo", seed, name = "" }) {
+export function createRun({ mode = "solo", seed, name = "", difficulty = "easy" }) {
   return {
     mode,
     seed,
     name,
+    difficulty: normalizeDifficulty(difficulty),
     day: 1,
     coins: mode === "vs" ? BAKE_OFF_BUDGET : 0,
     score: 0,
@@ -28,7 +37,9 @@ export function createRun({ mode = "solo", seed, name = "" }) {
 export const totalDays = (run) => (run.mode === "vs" ? 1 : DAYS.length);
 
 export function dayConfig(run) {
-  return run.mode === "vs" ? BAKE_OFF_DAY : DAYS[run.day - 1];
+  const day = run.mode === "vs" ? BAKE_OFF_DAY : DAYS[run.day - 1];
+  const difficulty = DIFFICULTIES[normalizeDifficulty(run.difficulty)];
+  return { ...day, patience: day.patience * difficulty.patienceMultiplier };
 }
 
 // Same seed + same day = same customers (that's what makes a Bake-Off fair).

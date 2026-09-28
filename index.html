@@ -31,6 +31,15 @@
             <span class="instruction-line"><strong>Best score:</strong><span id="welcome-best">No runs yet</span></span>
           </span>
         </div>
+        <fieldset class="difficulty-picker" aria-describedby="difficulty-description">
+          <legend>Customer patience</legend>
+          <div class="difficulty-options">
+            <label><input type="radio" name="difficulty" value="easy" checked /><span>Easy</span></label>
+            <label><input type="radio" name="difficulty" value="medium" /><span>Medium</span></label>
+            <label><input type="radio" name="difficulty" value="hard" /><span>Hard</span></label>
+          </div>
+          <p id="difficulty-description" aria-live="polite">More time to bake: customers wait twice as long, until closing.</p>
+        </fieldset>
         <button class="customize-button" id="customize-button" type="button">Customize your baker</button>
         <button class="start-button" id="solo-button" type="button">Start a 5-Day Run <span class="start-arrow" aria-hidden="true">→</span></button>
         <button class="start-button start-button-alt" id="vs-button" type="button">Bake-Off · 2 Players <span class="start-arrow" aria-hidden="true">⚔</span></button>

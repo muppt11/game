@@ -1,10 +1,11 @@
 import "./style.css";
 import "./game.css";
+import "./game/difficulty.css";
 import { isNarratorEnabled, narratorSupported, speak, toggleNarrator } from "./narrator";
 import { playSound, setupAudio } from "./audio";
 import { getCharacterLook, setupCharacterDialog } from "./character";
 import { STATIONS, describeCupcake, stationById } from "./game/data";
-import { createRun, dayConfig, daySeed, buy, finishDay, totalDays } from "./game/run";
+import { DIFFICULTIES, normalizeDifficulty, createRun, dayConfig, daySeed, buy, finishDay, totalDays } from "./game/run";
 import { randomSeed } from "./game/rng";
 import { createShift, hintFor } from "./game/shift";
 import { PALETTES, createBakeryScene } from "./game/scene";
@@ -68,6 +69,18 @@ const confettiLayer = $("#confetti-layer");
 
 let textSize = TEXT_SIZES.find((size) => size.id === store.get(TEXT_SIZE_KEY, "normal")) ?? TEXT_SIZES[0];
 let paletteId = store.get(PALETTE_KEY, "standard") === "colorblind" ? "colorblind" : "standard";
+let selectedDifficulty = normalizeDifficulty(store.get('crb-difficulty', 'easy'));
+function applyDifficulty() {
+  document.querySelector(`input[name="difficulty"][value="${selectedDifficulty}"]`).checked = true;
+  $('#difficulty-description').textContent = DIFFICULTIES[selectedDifficulty].description;
+}
+document.querySelectorAll('input[name="difficulty"]').forEach(input => input.addEventListener('change', () => {
+  selectedDifficulty = normalizeDifficulty(input.value);
+  store.set('crb-difficulty', selectedDifficulty);
+  applyDifficulty();
+}));
+applyDifficulty();
+
 
 function applyTextSize() {
   document.body.dataset.textSize = textSize.id;
@@ -203,6 +216,7 @@ const scene = createBakeryScene({
   onArrive: (stationId) => {
     if (!shift) return;
     if (stationId === "recipeBook") openBook();
+    else if (stationId === "bakeryDoor" && activities.openServing(shift)) panel.hide();
     else panel.show(stationId, shift);
   },
   onLeave: () => panel.hide(),
@@ -220,7 +234,7 @@ const coach = createCoach({
   announce: (message) => announce(message),
 });
 
-const shiftLabel = () => (run.mode === "vs" ? "Bake-Off" : `Day ${run.day} · ${DAY_TITLES[run.day - 1]}`);
+const shiftLabel = () => `${DIFFICULTIES[run.difficulty].label} · ` + (run.mode === "vs" ? "Bake-Off" : `Day ${run.day} · ${DAY_TITLES[run.day - 1]}`);
 
 function narratorContext() {
   if (!shift) return "Welcome to Tanvi's Cupcake Rush.";
@@ -439,7 +453,7 @@ function showScreen(name, options) {
 
 function startSolo() {
   vs = null;
-  run = createRun({ mode: "solo", seed: randomSeed() });
+  run = createRun({ mode: "solo", seed: randomSeed(), difficulty: selectedDifficulty });
   playSound("gameStart");
   enterGameScreen();
   showDayIntro();
@@ -607,7 +621,7 @@ gameDialogBody.addEventListener("keydown", (event) => {
 
 function beginVs(names) {
   const seed = randomSeed();
-  vs = { names, seed, turn: 0, runs: names.map((name) => createRun({ mode: "vs", seed, name })) };
+  vs = { names, seed, turn: 0, runs: names.map((name) => createRun({ mode: "vs", seed, name, difficulty: selectedDifficulty })) };
   playSound("gameStart");
   beginVsTurn();
 }

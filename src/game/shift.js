@@ -432,7 +432,7 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
       });
       if (actions.length === 0) {
         const reason = state.hands.some(isFinished)
-          ? (state.customers.some((customer) => customer.toGo) ? "No match - to-go orders need a box" : "Nobody ordered this one")
+          ? "Match the ticket’s cake, frosting and topping; box to-go orders"
           : "Bring a frosted cupcake";
         actions.push(action("noMatch", "Nothing to serve", { enabled: false, reason, run: () => {} }));
       }
