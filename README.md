@@ -4,7 +4,7 @@ A cozy pixel cooking game made with Vite and Kaboom.js for the **Chain Reaction!
 
 ## Hands-on stations
 
-The timed game now includes ingredient gathering (click or drag into the bowl), three stirs, batter dispensing, loading the oven, three frosting swirls, topping placement, and boxing with a ribbon. These close-ups use the selected order ingredients and commit to the same shift inventory when confirmed. Back/Escape cancels without applying an ingredient or awarding an item.
+The timed game now includes ingredient gathering (click or drag into the bowl), three stirs, batter dispensing, loading the oven, three frosting swirls, topping placement, a live oven progress bar and pickup, candle/heart decorations, ribbon color choices, and a serving conveyor with a customer reaction. These close-ups use the selected order ingredients and commit to the same shift inventory when confirmed. Before confirmation, Back/Escape cancels without applying an ingredient or awarding an item. After starting the oven or sending a delivery, returning to the kitchen leaves that action running. Recipe reminders stay visible, and finished preparation tasks walk the baker to the next station.
 
 The shift timer, ovens, and customer patience continue during station activities, except the guided first order's existing clock/patience hold. Finishing a shift closes any unfinished activity. Both solo and Bake-Off use the same interactions.
 

@@ -18,7 +18,7 @@ assert.equal(progress.ready, false);
 progress.advance();
 assert.equal(progress.ready, true);
 assert.equal(progress.advance(), false);
-for (const [id, count] of [['bake', 1], ['turbo', 1], ['frost:chocolate', 3], ['top:cherry', 1], ['box', 3]]) {
+for (const [id, count] of [['bake', 1], ['turbo', 1], ['frost:chocolate', 3], ['top:cherry', 1], ['box', 3], ['serve:1:1', 1], ['top:candle', 1], ['top:heart', 1]]) {
   const task = createActivityProgress(id);
   for (let i = 0; i < count; i++) {
     assert.equal(task.ready, false);

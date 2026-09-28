@@ -161,10 +161,15 @@ const screens = createScreens({
 const activities = createStationActivities({
   host: shell,
   sound: playSound,
-  onCommit: (stationId, actionId) => {
+  onCommit: (stationId, actionId, nextStation) => {
     if (phase !== "shift" || !shift) return;
-    if (shift.perform(stationId, actionId)) panel.refresh(shift);
-    else showBanner("Station unavailable — check heat and try again", "heat");
+    if (shift.perform(stationId, actionId)) {
+      panel.refresh(shift);
+      if (nextStation) scene.walkTo(nextStation);
+      return true;
+    }
+    showBanner("Action unavailable — check the order or station heat", "heat");
+    return false;
   },
 });
 

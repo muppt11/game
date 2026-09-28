@@ -309,12 +309,22 @@ function drawCupcake(x, y, item, s, palette, { frostLayers = 3 } = {}) {
   } else if (item.topping === "cherry") {
     k.drawCircle({ pos: k.vec2(x, y - 15 * s), radius: 3.5 * s, color: hex(itemColor(TOPPINGS.cherry, palette)), outline: { width: 1, color: hex(COLORS.cocoa) } });
     rect(1.5, -19.5, 1.2, 4, COLORS.brown);
+  } else if (item.topping === "candle") {
+    rect(0, -17, 3, 10, itemColor(TOPPINGS.candle, palette));
+    rect(0, -24, 3, 4, palette.warning);
+  } else if (item.topping === "heart") {
+    rect(-2, -17, 4, 4, itemColor(TOPPINGS.heart, palette));
+    rect(2, -17, 4, 4, itemColor(TOPPINGS.heart, palette));
+    rect(0, -14, 4, 3, itemColor(TOPPINGS.heart, palette));
   } else if (item.topping === "shavings") {
     [[-5, -6], [3, -9], [5, -4], [-1, -12]].forEach(([dx, dy]) => rect(dx, dy, 3, 1.6, itemColor(TOPPINGS.shavings, palette)));
   } else if (item.topping === "gold") {
     [[-5, -6], [4, -9], [0, -13], [6, -4]].forEach(([dx, dy]) => rect(dx, dy, 2.6, 2.6, itemColor(TOPPINGS.gold, palette)));
   }
-  if (item.boxed) rect(0, -1, 2.5, 30, palette.bad);
+  if (item.boxed) {
+    const ribbons = palette === PALETTES.colorblind ? { berry: "#0072b2", sage: "#009e73", gold: "#e69f00" } : { berry: "#bd5656", sage: "#87966f", gold: "#d4a84f" };
+    rect(0, -1, 2.5, 30, ribbons[item.bowColor ?? "berry"]);
+  }
   if (burnt) {
     const t = k.time();
     k.drawCircle({ pos: k.vec2(x - 4 * s, y - 14 * s - (t * 10) % 8), radius: 3 * s, color: hex("#8b8078"), opacity: 0.6 });

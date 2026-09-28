@@ -213,9 +213,14 @@ export function createStationPanel({ panel, kicker, title, status, actions, onAc
     refresh(shift) {
       if (!stationId) return;
       const list = shift.stationActions(stationId);
+      const held = shift.state.hands.find(item => item.stage !== "raw") ?? shift.state.hands[0];
+      const order = targetFor(held, shift.state.customers)?.order;
+      const recommended = stationId === "cafeTable" && order ? `flavor:${order.flavor}`
+        : stationId === "frostingCounter" && order ? `frost:${order.frosting}`
+        : stationId === "decoratingCounter" && order ? `top:${order.topping}` : null;
       const statusText = stationStatus(shift, stationId);
       const busy = Boolean(shift.state.busy);
-      const next = JSON.stringify([busy, list.map((entry) => [entry.id, entry.label, entry.detail, entry.enabled, entry.reason])]);
+      const next = JSON.stringify([busy, recommended, list.map((entry) => [entry.id, entry.label, entry.detail, entry.enabled, entry.reason])]);
       panel.classList.toggle("is-busy", busy && shift.state.busy.stationId === stationId);
       status.textContent = statusText;
       status.hidden = !statusText;
@@ -225,8 +230,8 @@ export function createStationPanel({ panel, kicker, title, status, actions, onAc
       status.textContent = statusText;
       status.hidden = !statusText;
       actions.innerHTML = list.map((entry, index) => `
-        <button type="button" data-action="${escapeHtml(entry.id)}" ${entry.enabled && !busy ? "" : "disabled"} class="${entry.id === "cool" ? "is-cool" : ""}">
-          <kbd>${index + 1}</kbd><span class="action-label">${escapeHtml(entry.label)}</span>
+        <button type="button" data-action="${escapeHtml(entry.id)}" ${entry.enabled && !busy ? "" : "disabled"} class="${entry.id === "cool" ? "is-cool" : ""} ${entry.id === recommended ? "is-recommended" : ""}">
+          <kbd>${index + 1}</kbd><span class="action-label">${escapeHtml(entry.label)}${entry.id === recommended ? " · Order match" : ""}</span>
           ${entry.enabled ? (entry.detail ? `<small>${escapeHtml(entry.detail)}</small>` : "") : `<small class="action-reason">${escapeHtml(entry.reason)}</small>`}
         </button>`).join("");
       if (focusedAction) actions.querySelector(`[data-action="${CSS.escape(focusedAction)}"]`)?.focus();

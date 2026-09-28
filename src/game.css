@@ -472,3 +472,29 @@ body[data-palette="colorblind"] .station-activity-dialog .baking-feedback,
 body[data-palette="colorblind"] .station-activity-dialog .packaging-feedback { color: #3d2929; }
 body[data-palette="colorblind"] .station-activity-dialog [data-decoration="cherry"] .cupcake-decoration,
 body[data-palette="colorblind"] .station-activity-dialog [data-decoration="cherry"] .package-cupcakes i { background: #d55e00; }
+
+/* One visible primary action per activity, with the order always in view. */
+.activity-controls [hidden] { display: none; }
+.activity-order { padding: 8px; border: 2px dashed #6f4436; background: #fff5dc; font-size: calc(11px * var(--text-scale)); line-height: 1.5; }
+.station-activity-dialog .bake-progress span { animation: none; transition: width 100ms linear; }
+.station-activity-dialog .baking-interaction.is-baking .oven-tray,
+.station-activity-dialog .baking-interaction.is-baked .oven-tray { transform: scale(.53); }
+.station-activity-dialog .frosting-meter { margin-top: 12px; }
+.station-activity-dialog .serving-scene { --delivery-distance: 230px; }
+.station-activity-dialog .serving-package { transition: none; }
+.station-activity-dialog .is-delivering .serving-package { animation: deliver-order 700ms linear forwards; }
+.station-activity-dialog .is-delivered .serving-package { transform: translateX(var(--delivery-distance)); }
+@keyframes deliver-order { from { transform: translateX(0); } to { transform: translateX(var(--delivery-distance)); } }
+.station-activity-dialog .unboxed-order { background: transparent; border: 0; box-shadow: none; }
+.station-activity-dialog .unboxed-order .cupcake-placeholder { position: absolute; bottom: -15px; left: -32px; transform: scale(.55); transform-origin: center bottom; }
+body[data-palette="colorblind"] .station-activity-dialog .activity-package[data-bow="sage"] { --bow-color: #009e73 !important; }
+body[data-palette="colorblind"] .station-activity-dialog .activity-package[data-bow="gold"] { --bow-color: #e69f00 !important; }
+@media (max-width: 480px) { .station-activity-dialog .serving-scene { --delivery-distance: 160px; } }
+@media (prefers-reduced-motion: reduce) { .station-activity-dialog .is-delivering .serving-package { animation: none; transform: translateX(var(--delivery-distance)); } }
+
+.station-actions .is-recommended { border: 2px solid #6f4436; background: #fff5dc; box-shadow: inset 4px 0 #e69f00; }
+.station-activity-dialog [data-collect][hidden] { display: none; }
+
+body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart"] .cupcake-decoration,
+body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart"] .cupcake-decoration::before,
+body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart"] .cupcake-decoration::after { background: #cc79a7; }

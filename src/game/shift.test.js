@@ -270,5 +270,33 @@ for (const combo of COMBOS) {
   assert(/Serving/.test(hintFor(item, [{ name: "Plain", order: { flavor: "vanilla", frosting: "chocolate", topping: "none" } }])), "plain order goes directly to Serving");
 }
 
+// Original decorations remain real, fulfillable order ingredients.
+for (const topping of ["candle", "heart"]) {
+  const { shift } = makeShift();
+  const item = bakeCupcake(shift, "vanilla", "buttercream", topping);
+  assert(matchesOrder(item, { order: { flavor: "vanilla", frosting: "buttercream", topping } }), `${topping} decoration fulfills its ticket`);
+}
+// A live oven view must collect its own cupcake when several racks are ready.
+{
+  const { shift } = makeShift();
+  shift.state.oven[0] = { item: { id: 41, flavor: "vanilla", stage: "baked" }, startedAt: 0, duration: 7 };
+  shift.state.oven[1] = { item: { id: 42, flavor: "chocolate", stage: "baked" }, startedAt: 0, duration: 7 };
+  const pickup = shift.stationActions("oven").find(action => action.itemId === 42);
+  run(shift, "oven", pickup.id);
+  assert(shift.state.hands[0].id === 42, "live pickup targets the viewed cupcake");
+  assert(shift.state.oven[0].item.id === 41, "other rack stays in the oven");
+}
+
+// Keep a pickup bound to its item if readiness ordering changes mid-action.
+{
+  const { shift } = makeShift();
+  shift.state.oven[0] = { item: { id: 51, flavor: "vanilla", stage: "baked" }, startedAt: 0, duration: 7 };
+  shift.state.oven[1] = { item: { id: 52, flavor: "chocolate", stage: "baked" }, startedAt: 0, duration: 7 };
+  shift.perform("oven", "takeOut");
+  shift.state.oven[0].item.stage = "burnt";
+  shift.tick(1);
+  assert(shift.state.hands[0].id === 51, "pickup does not switch racks when the selected cupcake burns");
+}
+
 console.log(`${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

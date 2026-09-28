@@ -54,6 +54,8 @@ export const TOPPINGS = {
   none: { name: "Plain", value: 0, color: null, time: 0, cost: 0 },
   sprinkles: { name: "Sprinkles", value: 2, color: "#e98f9d", cbColor: "#CC79A7", time: 0.7, cost: 0 },
   cherry: { name: "Cherry", value: 3, color: "#c0392b", cbColor: "#D55E00", time: 0.7, cost: 0 },
+  candle: { name: "Birthday Candle", value: 3, color: "#e98f9d", cbColor: "#E69F00", time: 0.7, cost: 0 },
+  heart: { name: "Heart Topper", value: 3, color: "#bd5656", cbColor: "#CC79A7", time: 0.7, cost: 0 },
   shavings: { name: "Choc Shavings", value: 3, color: "#4a2a20", cbColor: "#1f1410", time: 0.7, cost: 0 },
   gold: { name: "Gold Flakes", value: 8, color: "#e3b53b", cbColor: "#F0E442", time: 1.1, cost: 120 },
 };
@@ -61,7 +63,7 @@ export const TOPPINGS = {
 export const STARTING_MENU = {
   flavors: ["vanilla", "chocolate", "strawberry"],
   frostings: ["buttercream", "chocolate", "strawberry"],
-  toppings: ["none", "sprinkles", "cherry", "shavings"],
+  toppings: ["none", "sprinkles", "cherry", "shavings", "candle", "heart"],
 };
 
 export const FULL_MENU = {

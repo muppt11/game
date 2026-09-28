@@ -337,18 +337,23 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
         return baked >= 0 ? baked : state.oven.findIndex((slot) => slot?.item.stage === "burnt");
       };
       const takeSlot = readySlot();
-      if (takeSlot >= 0) {
-        actions.push(action("takeOut", state.oven[takeSlot].item.stage === "baked" ? "Take out the baked cupcake" : "Take out (burnt!)", {
+      state.oven.forEach((slot, index) => {
+        if (!slot || !["baked", "burnt"].includes(slot.item.stage)) return;
+        const itemId = slot.item.id;
+        const takeAction = action(index === takeSlot ? "takeOut" : `takeOut:${itemId}`, slot.item.stage === "baked" ? "Take out the baked cupcake" : "Take out (burnt!)", {
+          detail: `Rack ${index + 1} · ${FLAVORS[slot.item.flavor].name}`,
           enabled: freeHand(),
           reason: "Your hands are full",
           duration: RULES.actionTime.takeOut,
           run: () => {
-            const slot = readySlot();
-            state.hands.push(state.oven[slot].item);
-            state.oven[slot] = null;
+            const slotIndex = state.oven.findIndex(entry => entry?.item.id === itemId);
+            state.hands.push(state.oven[slotIndex].item);
+            state.oven[slotIndex] = null;
           },
-        }));
-      }
+        });
+        takeAction.itemId = itemId;
+        actions.push(takeAction);
+      });
     }
 
     if (stationId === "frostingCounter") {
@@ -423,13 +428,13 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
 
   function perform(stationId, actionId) {
     if (state.ended || state.busy) return false;
-    const chosen = stationActions(stationId).find((entry) => entry.id === actionId);
+    const chosen = stationActions(stationId).find((entry) => entry.id === actionId || (actionId.startsWith("takeOut:") && entry.itemId === Number(actionId.slice(8))));
     if (!chosen || !chosen.enabled) return false;
     if (chosen.duration <= 0) {
       chosen.run();
       return true;
     }
-    state.busy = { stationId, actionId, label: chosen.label, startedAt: state.time, until: state.time + chosen.duration };
+    state.busy = { stationId, actionId: chosen.itemId ? `takeOut:${chosen.itemId}` : actionId, label: chosen.label, startedAt: state.time, until: state.time + chosen.duration };
     emit("busy", { station: stationId, action: actionId });
     return true;
   }
@@ -437,7 +442,7 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
   // Re-checked at completion: a customer may have left, or the station may
   // have jammed, while the player was working.
   function completeBusy(busy) {
-    const chosen = stationActions(busy.stationId).find((entry) => entry.id === busy.actionId);
+    const chosen = stationActions(busy.stationId).find((entry) => entry.id === busy.actionId || (busy.actionId.startsWith("takeOut:") && entry.itemId === Number(busy.actionId.slice(8))));
     if (!chosen || !chosen.enabled) {
       emit("actionFailed", { station: busy.stationId, action: busy.actionId });
       return;
