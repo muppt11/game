@@ -2,6 +2,12 @@
 
 A cozy pixel cooking game made with Vite and Kaboom.js for the **Chain Reaction!** game jam. Think Papa's Cupcakeria meets Overcooked: customers line up with order tickets, and you run between stations to bake each cupcake before their patience runs out.
 
+## Batch baking
+
+Choose 1 or 2 cupcakes at Ingredients, mix once, and dispense into each liner. Bake loads every raw cupcake that fits in the oven at the same time. Collect ready cupcakes together; frost, decorate, and serve each order separately. The Serving Tray upgrade carries four; extra oven racks let larger batches bake together.
+
+Every station popup has a close button. An Oven ready shortcut lets you leave an unfinished activity to collect baking, and coaching bubbles hide while station menus are open.
+
 ## Hands-on stations
 
 The timed game now includes ingredient gathering (click or drag into the bowl), three stirs, batter dispensing, loading the oven, three frosting swirls, topping placement, a live oven progress bar and pickup, candle/heart decorations, ribbon color choices, and a serving conveyor with a customer reaction. These close-ups use the selected order ingredients and commit to the same shift inventory when confirmed. Before confirmation, Back/Escape cancels without applying an ingredient or awarding an item. After starting the oven or sending a delivery, returning to the kitchen leaves that action running. Recipe reminders stay visible, and finished preparation tasks walk the baker to the next station.

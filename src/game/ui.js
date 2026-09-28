@@ -157,7 +157,7 @@ export function renderOrders(rail, shift, discovered) {
 function stationStatus(shift, stationId) {
   const { state } = shift;
   const parts = [];
-  if (state.jammed.has(stationId)) return "Overheated! Cool it down before you can use it again.";
+  if (state.jammed.has(stationId)) return stationId === "oven" ? "Overheated! You can still collect cupcakes. Cool it down before baking more." : "Overheated! Cool it down before you can use it again.";
   if (stationId === "oven") {
     parts.push(state.oven.map((slot, index) => {
       if (!slot) return `Rack ${index + 1}: empty`;

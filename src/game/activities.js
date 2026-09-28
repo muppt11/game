@@ -13,15 +13,17 @@ const STEPS = {
   top: ['Add the topping'], box: ['Place cupcake in box', 'Close the lid', 'Tie the ribbon'],
 };
 
-export function createActivityProgress(actionId) {
+export function createActivityProgress(actionId, count = 1) {
   const kind = actionId.split(':')[0];
   if (!STEPS[kind]) return null;
   const ingredients = new Set();
   let step = 0;
   let stirs = 0;
+  let filled = 0;
   return {
     kind, ingredients,
     get step() { return step; },
+    get filled() { return filled; },
     get stirs() { return stirs; },
     get ready() { return step === STEPS[kind].length; },
     get label() { return STEPS[kind][step] ?? 'Ready!'; },
@@ -34,13 +36,14 @@ export function createActivityProgress(actionId) {
     advance() {
       if (step >= STEPS[kind].length || (kind === 'flavor' && step === 0)) return false;
       if (kind === 'flavor' && step === 1 && ++stirs < 3) return true;
+      if (kind === 'flavor' && step === 2 && ++filled < count) return true;
       step += 1;
       return true;
     },
   };
 }
 
-export function createStationActivities({ host, onCommit, sound }) {
+export function createStationActivities({ host, onCommit, onNavigate, sound }) {
   const dialog = document.createElement('dialog');
   dialog.className = 'game-dialog station-activity-dialog';
   dialog.setAttribute('aria-labelledby', 'activity-title');
@@ -69,19 +72,19 @@ export function createStationActivities({ host, onCommit, sound }) {
   function workspace() {
     const { progress: p, item, value } = task;
     if (p.kind === 'flavor') {
-      return `<div class="batter-workspace">
+      return `${p.step === 0 && p.ingredients.size === 0 ? `<fieldset class="batch-picker"><legend>How many cupcakes?</legend>${Array.from({ length: task.maxCount }, (_, i) => `<button type="button" data-count="${i + 1}" aria-pressed="${task.count === i + 1}">${i + 1}</button>`).join('')}</fieldset>` : `<p class="batch-note">Making ${task.count} cupcake${task.count > 1 ? 's' : ''}</p>`}<div class="batter-workspace">
         <div class="batter-ingredients">${INGREDIENTS.map(id => `<button type="button" class="batter-ingredient ${p.ingredients.has(id) ? 'is-added' : ''}" data-ingredient="${id}" draggable="true" ${p.ingredients.has(id) ? 'disabled' : ''}><span class="ingredient-icon ingredient-${id}" aria-hidden="true"></span>${id[0].toUpperCase() + id.slice(1)} ${p.ingredients.has(id) ? '✓' : ''}</button>`).join('')}</div>
         <div class="mixing-bowl ${p.step >= 2 ? 'is-mixed' : ''}" data-bowl aria-label="Drop ingredients into the mixing bowl"><span class="bowl-fill"></span>${INGREDIENTS.map(id => `<span class="batter-pixel batter-pixel-${id} ${p.ingredients.has(id) && p.step < 2 ? 'is-visible' : ''}"></span>`).join('')}<span class="spoon-tool ${p.step >= 1 ? 'is-visible' : ''} ${p.stirs ? 'is-whisking' : ''}"></span><span class="bowl-rim"></span></div>
       </div>
       ${p.step >= 2 ? `<div class="tray-interaction station-tray" style="--batter-color:${color(FLAVORS[value])};--batter-edge:#6f4436"><div class="tray-workspace">
         <button type="button" class="batter-dispenser ${p.ready ? 'has-dispensed is-dispensing' : ''}" data-step ${p.ready ? 'disabled' : ''} aria-label="Dispense batter into the cupcake liner"><span class="dispenser-tank" aria-hidden="true"></span><span class="dispenser-nozzle" aria-hidden="true"></span><span class="dispenser-click-cue" aria-hidden="true"></span><strong>${p.ready ? 'Filled ✓' : 'Dispense'}</strong></button>
-        <div class="project-tray" aria-label="Tray: ${p.ready ? 'one filled cupcake liner' : 'one empty cupcake liner'}"><span class="tray-cup ${p.ready ? 'is-filled' : ''}"></span>${'<span class="tray-cup spare-cup" aria-hidden="true"></span>'.repeat(3)}</div>
-      </div><p class="tray-feedback">${p.ready ? 'One cupcake liner filled — ready for the oven.' : 'Click the dispenser to fill your cupcake liner.'}</p></div>` : ''}`;
+        <div class="project-tray" aria-label="${p.filled} of ${task.count} liners filled">${Array.from({ length: 4 }, (_, i) => `<span class="tray-cup ${i < p.filled ? 'is-filled' : ''} ${i >= task.count ? 'spare-cup' : ''}" aria-hidden="true"></span>`).join('')}</div>
+      </div><p class="tray-feedback">${p.ready ? `${task.count} cupcake${task.count > 1 ? 's' : ''} ready for the oven.` : `Click Dispense: ${p.filled} of ${task.count} filled.`}</p></div>` : ''}`;
     }
     if (p.kind === 'bake' || p.kind === 'turbo') {
       return `<div class="baking-interaction station-baking ${p.ready ? 'is-loaded' : ''}" style="--batter-color:${color(FLAVORS[item.flavor])};--batter-edge:#6f4436">
         <div class="baking-workspace"><div class="activity-oven" data-oven aria-label="Oven: ${p.ready ? 'tray loaded' : 'drop tray here'}"><span class="oven-control control-one"></span><span class="oven-control control-two"></span><span class="oven-window"></span><span class="oven-rack"></span></div>
-        <div class="oven-tray" draggable="${!p.ready}" data-tray aria-label="Tray with one cupcake"><span class="oven-cup"></span>${'<span class="oven-cup spare-cup" aria-hidden="true"></span>'.repeat(3)}</div></div>
+        <div class="oven-tray" draggable="${!p.ready}" data-tray aria-label="Tray with ${task.count} cupcakes">${Array.from({ length: 4 }, (_, i) => `<span class="oven-cup ${i >= task.count ? 'spare-cup' : ''}"></span>`).join('')}</div></div>
         <p class="baking-feedback">${p.ready ? 'Tray loaded. Press Start baking to switch on the oven.' : 'Drag the filled tray into the oven, or use the button below.'}</p></div>`;
     }
     if (p.kind === 'serve') return `<div class="serving-interaction ${task.mode === 'serving' ? 'is-delivering' : ''}" style="--bow-color:${bowColor(item.bowColor ?? 'berry')}"><div class="serving-scene">
@@ -100,7 +103,7 @@ export function createStationActivities({ host, onCommit, sound }) {
     const title = p.kind === 'flavor' ? `${FLAVORS[value].name} batter` : action.label;
     const instruction = p.ready ? 'Ready! Use the button below to finish and move on.' : p.kind === 'flavor' && p.step === 0 ? 'Click each ingredient, or drag it into the bowl.' : p.kind === 'flavor' && p.step === 1 ? `Stir the bowl three times (${p.stirs}/3).` : p.label + '.';
     const label = p.kind === 'flavor' ? (p.step === 1 ? `Stir the batter (${p.stirs}/3)` : 'Dispense into liner') : p.kind === 'top' ? `Add ${TOPPINGS[value].name}` : p.label;
-    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><p class="dialog-kicker">${escapeHtml(stationById(stationId).title)} · HANDS-ON</p><h2 id="activity-title">${escapeHtml(title)}</h2><p class="activity-clock"></p>${orderReminder()}<p class="activity-instruction" role="status">${escapeHtml(instruction)}</p><div class="activity-workspace">${workspace()}</div><div class="activity-controls">${!p.ready && !(p.kind === 'flavor' && (p.step === 0 || p.step === 2)) ? `<button type="button" class="whisk-button" data-step>${escapeHtml(label)}</button>` : ''}<button type="button" class="start-button" data-confirm ${p.ready ? '' : 'hidden'}>${p.kind === 'flavor' ? 'Take batter → Oven' : p.kind === 'frost' ? 'Finish frosting → Next station' : p.kind === 'top' ? 'Finish topping → Next station' : p.kind === 'box' ? 'Take box → Serving' : 'Start baking'}</button><button type="button" class="default-button" data-cancel>Back to kitchen</button></div></div>`;
+    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><button type="button" class="dialog-close" data-cancel aria-label="Close station and return to kitchen">×</button><p class="dialog-kicker">${escapeHtml(stationById(stationId).title)} · HANDS-ON</p><h2 id="activity-title">${escapeHtml(title)}</h2><p class="activity-clock"></p><button type="button" class="oven-rescue" data-oven-rescue hidden>Oven ready — collect cupcakes</button>${orderReminder()}<p class="activity-instruction" role="status">${escapeHtml(instruction)}</p><div class="activity-workspace">${workspace()}</div><div class="activity-controls">${!p.ready && !(p.kind === 'flavor' && (p.step === 0 || p.step === 2)) ? `<button type="button" class="whisk-button" data-step>${escapeHtml(label)}</button>` : ''}<button type="button" class="start-button" data-confirm ${p.ready ? '' : 'hidden'}>${p.kind === 'flavor' ? 'Take batter → Oven' : p.kind === 'frost' ? 'Finish frosting → Next station' : p.kind === 'top' ? 'Finish topping → Next station' : p.kind === 'box' ? 'Take box → Serving' : 'Start baking'}</button><button type="button" class="default-button" data-cancel>Back to kitchen</button></div></div>`;
     update();
   }
   function orderReminder() {
@@ -111,7 +114,7 @@ export function createStationActivities({ host, onCommit, sound }) {
   }
   function renderLive(mode) {
     task.mode = mode;
-    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><p class="dialog-kicker">${mode === 'oven' ? 'OVEN' : 'SERVING'}</p><h2 id="activity-title">${mode === 'oven' ? 'Bake your cupcake' : 'Deliver the order'}</h2><p class="activity-clock"></p><p class="activity-instruction" role="status"></p>${workspace()}${mode === 'oven' ? '<div class="bake-progress" role="progressbar" aria-label="Baking progress" aria-valuemin="0" aria-valuemax="100"><span></span></div><button class="start-button" type="button" data-collect disabled>Loading oven…</button>' : ''}<button class="default-button" type="button" data-cancel>Back to kitchen</button></div>`;
+    dialog.innerHTML = `<div class="dialog-paper game-paper activity-paper"><button type="button" class="dialog-close" data-cancel aria-label="Close station and return to kitchen">×</button><p class="dialog-kicker">${mode === 'oven' ? 'OVEN' : 'SERVING'}</p><h2 id="activity-title">${mode === 'oven' ? 'Bake your cupcake' : 'Deliver the order'}</h2><p class="activity-clock"></p><button type="button" class="oven-rescue" data-oven-rescue hidden>Oven ready — collect cupcakes</button><p class="activity-instruction" role="status"></p>${workspace()}${mode === 'oven' ? '<div class="bake-progress" role="progressbar" aria-label="Baking progress" aria-valuemin="0" aria-valuemax="100"><span></span></div><button class="start-button" type="button" data-collect disabled>Loading oven…</button>' : ''}<button class="default-button" type="button" data-cancel>Back to kitchen</button></div>`;
     update();
   }
   function stop() {
@@ -125,6 +128,7 @@ export function createStationActivities({ host, onCommit, sound }) {
     const clock = dialog.querySelector('.activity-clock');
     const text = shift.state.hold ? 'Guided order · clock and patience paused' : `Shift: ${seconds}s remaining · customers are waiting`;
     if (clock.textContent !== text) clock.textContent = text;
+    dialog.querySelector('[data-oven-rescue]').hidden = task.mode === 'oven' || !!shift.state.busy || !shift.state.oven.some(slot => slot?.item.stage === 'baked');
     if (task.mode === 'oven') {
       const slot = shift.state.oven.find(entry => entry?.item.id === task.item.id);
       const button = dialog.querySelector('[data-collect]');
@@ -137,7 +141,7 @@ export function createStationActivities({ host, onCommit, sound }) {
       dialog.querySelector('.bake-progress').setAttribute('aria-valuenow', String(Math.round(progress)));
       button.hidden = !ready;
       button.disabled = !ready || !!shift.state.busy || shift.state.hands.length >= shift.state.handCapacity;
-      button.textContent = ready ? (slot.item.stage === 'burnt' ? 'Take out burnt cupcake' : 'Take out → Frosting') : 'Baking…';
+      button.textContent = ready ? (slot.item.stage === 'burnt' ? 'Take out burnt cupcake' : 'Collect ready cupcakes → Frosting') : 'Baking…';
       dialog.querySelector('.activity-instruction').textContent = !slot && !shift.state.busy ? 'The oven could not start. Return to the kitchen and check station heat.' : slot?.item.stage === 'burnt' ? 'It burned. Take it out, then toss it at Ingredients.' : ready ? (button.disabled ? 'Free a hand at the Display Case, then collect your cupcake.' : 'Ding! Your cupcake is ready — take it out.') : slot ? `Baking: ${Math.max(0, Math.ceil(slot.duration - (shift.state.time - slot.startedAt)))} seconds left.` : 'Putting the tray in…';
       const feedback = dialog.querySelector('.baking-feedback');
       feedback.textContent = 'The oven keeps baking if you return to the kitchen.';
@@ -165,6 +169,18 @@ export function createStationActivities({ host, onCommit, sound }) {
     const button = event.target.closest('button');
     if (!task || !button || button.disabled) return;
     if (button.hasAttribute('data-cancel')) return stop();
+    if (button.hasAttribute('data-oven-rescue')) {
+      stop();
+      onNavigate('oven');
+      return;
+    }
+    if (button.dataset.count) {
+      task.count = Number(button.dataset.count);
+      task.progress = createActivityProgress(task.action.id, task.count);
+      render();
+      dialog.querySelector(`[data-count="${task.count}"]`)?.focus();
+      return;
+    }
     if (button.dataset.ingredient) return change(button.dataset.ingredient);
     if (button.dataset.bowChoice) {
       task.bow = button.dataset.bowChoice;
@@ -175,7 +191,8 @@ export function createStationActivities({ host, onCommit, sound }) {
     if (button.hasAttribute('data-collect')) {
       const next = task.item.stage === 'burnt' ? 'cafeTable' : 'frostingCounter';
       const pickup = task.shift.stationActions('oven').find(action => action.itemId === task.item.id);
-      if (pickup && onCommit('oven', pickup.id, next)) stop();
+      const readyCount = task.shift.state.oven.filter(slot => slot && ['baked', 'burnt'].includes(slot.item.stage)).length;
+      if (pickup && onCommit('oven', readyCount > 1 ? 'takeAll' : pickup.id, next)) stop();
       return;
     }
     if (button.hasAttribute('data-step')) {
@@ -191,7 +208,7 @@ export function createStationActivities({ host, onCommit, sound }) {
         if (onCommit(stationId, action.id)) renderLive('oven');
         return;
       }
-      if (onCommit(stationId, action.id, nextStation())) {
+      if (onCommit(stationId, action.id, nextStation(), { count: progress.kind === 'flavor' ? task.count : 1 })) {
         if (progress.kind === 'box') item.bowColor = bow;
         stop();
       }
@@ -226,7 +243,9 @@ export function createStationActivities({ host, onCommit, sound }) {
         progress.kind === 'frost' ? held.stage === 'baked' && !held.frosting :
         held.stage === 'baked' && held.frosting && (progress.kind === 'top' ? !held.topping : !held.boxed));
       if (!item) return false;
-      task = { shift, stationId, action, value, item, progress, bow: item.bowColor ?? 'berry', mode: 'prepare' };
+      const maxCount = Math.min(4, shift.state.handCapacity - shift.state.hands.length);
+      const count = ['bake', 'turbo'].includes(progress.kind) ? Math.min(shift.state.hands.filter(held => held.stage === 'raw').length, shift.state.oven.filter(slot => !slot).length) : 1;
+      task = { shift, stationId, action, value, item, progress, maxCount, count, bow: item.bowColor ?? 'berry', mode: 'prepare' };
       render();
       dialog.showModal();
       (dialog.querySelector('[data-ingredient]') ?? dialog.querySelector('[data-step]:not(:disabled)'))?.focus();

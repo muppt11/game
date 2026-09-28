@@ -206,6 +206,9 @@ export function createCoach({ bubble, kicker, text, okButton, skipButton, scene,
       shift.setHold(false);
       render();
     },
+    setObscured(value) {
+      bubble.hidden = value || !current;
+    },
     stop() {
       shift = null;
       tutorial = false;

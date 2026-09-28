@@ -37,3 +37,12 @@ shift.tick(1);
 assert.equal(shift.state.hands.length, 1);
 assert.equal(shift.state.hands[0].flavor, 'vanilla');
 console.log('Station activity progression and commit checks passed');
+
+const batch = createActivityProgress('flavor:vanilla', 2);
+for (const id of INGREDIENTS) batch.collect(id);
+for (let i = 0; i < 3; i++) batch.advance();
+batch.advance();
+assert.equal(batch.ready, false, 'one pour cannot finish a two-cupcake batch');
+batch.advance();
+assert.equal(batch.ready, true);
+assert.equal(batch.filled, 2);

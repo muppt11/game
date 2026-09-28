@@ -127,7 +127,7 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
     bestChain: 0,
     saverCharges: level("chainSaver"),
     hands: [],
-    handCapacity: level("tray") ? 2 : 1,
+    handCapacity: level("tray") ? 4 : 2,
     oven: Array.from({ length: RULES.baseOvenSlots + level("ovenRack") }, () => null),
     display: Array.from({ length: RULES.displaySlots }, () => null),
     queue: generateCustomers(day, menu, seed),
@@ -262,7 +262,7 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
         emit("cooled", { station: stationId });
       },
     });
-    if (jammed) return [coolAction];
+    if (jammed && stationId !== "oven") return [coolAction];
 
     if (stationId === "cafeTable") {
       for (const flavor of menu.flavors) {
@@ -320,17 +320,33 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
     if (stationId === "oven") {
       const raw = heldIndex((item) => item.stage === "raw");
       const freeSlot = state.oven.indexOf(null);
-      const canBake = raw >= 0 && freeSlot >= 0;
-      const reason = raw < 0 ? "Bring raw batter from Ingredients" : "The oven is full";
+      const canBake = !jammed && raw >= 0 && freeSlot >= 0;
+      const reason = jammed ? "Cool the oven before baking more" : raw < 0 ? "Bring raw batter from Ingredients" : "The oven is full";
+      const batchSize = Math.min(state.hands.filter(item => item.stage === "raw").length, state.oven.filter(slot => !slot).length);
       const bake = (turbo) => () => {
+        for (let n = 0; n < batchSize; n += 1) {
         const slot = state.oven.indexOf(null);
         const item = takeFromHands(heldIndex((held) => held.stage === "raw"));
         item.stage = "baking";
         state.oven[slot] = { item, startedAt: state.time, duration: state.bakeTime * (turbo ? 0.5 : 1), turbo };
         emit("ovenIn", { slot, turbo });
+        }
       };
-      actions.push(action("bake", `Bake (${state.bakeTime}s)`, { enabled: canBake, reason, duration: RULES.actionTime.bake, heat: RULES.heat.bake, run: bake(false) }));
+      actions.push(action("bake", `Bake ${batchSize > 1 ? `${batchSize} cupcakes ` : ""}(${state.bakeTime}s)`, { enabled: canBake, reason, duration: RULES.actionTime.bake, heat: RULES.heat.bake, run: bake(false) }));
       actions.push(action("turbo", `Turbo bake (${state.bakeTime / 2}s, +heat)`, { enabled: canBake, reason, duration: RULES.actionTime.bake, heat: RULES.heat.turbo, run: bake(true) }));
+      const readyItems = state.oven.filter(slot => slot && ["baked", "burnt"].includes(slot.item.stage));
+      if (readyItems.length > 1) actions.push(action("takeAll", "Take out ready cupcakes", {
+        detail: `Collect up to ${state.handCapacity - state.hands.length}`,
+        enabled: freeHand(), reason: "Free space in your hands at Display Case",
+        duration: RULES.actionTime.takeOut,
+        run: () => {
+          for (const slot of readyItems) {
+            if (!freeHand()) break;
+            state.hands.push(slot.item);
+            state.oven[state.oven.indexOf(slot)] = null;
+          }
+        },
+      }));
       // Baked cupcakes come out before burnt ones.
       const readySlot = () => {
         const baked = state.oven.findIndex((slot) => slot?.item.stage === "baked");
@@ -422,19 +438,22 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
       }
     }
 
-    if (heat >= WARNING_THRESHOLD) actions.push(coolAction);
+    if (jammed || heat >= WARNING_THRESHOLD) actions.push(coolAction);
     return actions;
   }
 
-  function perform(stationId, actionId) {
+  function perform(stationId, actionId, { count = 1 } = {}) {
     if (state.ended || state.busy) return false;
+    if (!Number.isInteger(count) || count < 1 || count > state.handCapacity) return false;
+    if (actionId.startsWith("flavor:") && state.hands.length + count > state.handCapacity) return false;
+    if (!actionId.startsWith("flavor:") && count !== 1) return false;
     const chosen = stationActions(stationId).find((entry) => entry.id === actionId || (actionId.startsWith("takeOut:") && entry.itemId === Number(actionId.slice(8))));
     if (!chosen || !chosen.enabled) return false;
     if (chosen.duration <= 0) {
       chosen.run();
       return true;
     }
-    state.busy = { stationId, actionId: chosen.itemId ? `takeOut:${chosen.itemId}` : actionId, label: chosen.label, startedAt: state.time, until: state.time + chosen.duration };
+    state.busy = { stationId, count, actionId: chosen.itemId ? `takeOut:${chosen.itemId}` : actionId, label: chosen.label, startedAt: state.time, until: state.time + chosen.duration };
     emit("busy", { station: stationId, action: actionId });
     return true;
   }
@@ -443,13 +462,13 @@ export function createShift({ day, seed, menu, upgrades = {}, discovered = [], o
   // have jammed, while the player was working.
   function completeBusy(busy) {
     const chosen = stationActions(busy.stationId).find((entry) => entry.id === busy.actionId || (busy.actionId.startsWith("takeOut:") && entry.itemId === Number(busy.actionId.slice(8))));
-    if (!chosen || !chosen.enabled) {
+    if (!chosen || !chosen.enabled || (busy.actionId.startsWith("flavor:") && state.hands.length + busy.count > state.handCapacity)) {
       emit("actionFailed", { station: busy.stationId, action: busy.actionId });
       return;
     }
-    chosen.run();
+    for (let n = 0; n < busy.count; n += 1) chosen.run();
     emit("actionDone", { station: busy.stationId, action: busy.actionId });
-    addHeat(busy.stationId, chosen.heat);
+    addHeat(busy.stationId, chosen.heat * busy.count);
   }
 
   // ---- Time -------------------------------------------------------------------

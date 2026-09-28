@@ -86,15 +86,18 @@ function bakeCupcake(shift, flavor, frosting, topping) {
   assert(shift.state.hands.length === 0, "burnt cupcake tossed");
 }
 
-// 4. Hands: one cupcake at a time without the Serving Tray, two with it.
+// 4. Carry two cupcakes by default and four with the Serving Tray.
 {
   const { shift } = makeShift();
   run(shift, "cafeTable", "flavor:vanilla");
-  assert(!shift.stationActions("cafeTable").find((entry) => entry.id === "flavor:vanilla").enabled, "can't carry two without a tray");
+  run(shift, "cafeTable", "flavor:vanilla");
+  assert(!shift.stationActions("cafeTable").find((entry) => entry.id === "flavor:vanilla").enabled, "two cupcakes fill the default tray");
   const tray = makeShift({ upgrades: { tray: 1 } }).shift;
   run(tray, "cafeTable", "flavor:vanilla");
   run(tray, "cafeTable", "flavor:lemon");
-  assert(tray.state.hands.length === 2, "the Serving Tray carries two");
+  run(tray, "cafeTable", "flavor:vanilla");
+  run(tray, "cafeTable", "flavor:lemon");
+  assert(tray.state.hands.length === 4, "the Serving Tray carries four");
 }
 
 // 5. To-go orders need a box; exact orders need the exact cupcake.
@@ -150,7 +153,7 @@ for (const saver of [0, 1]) {
   }
   assert(has("overheat") && shift.state.jammed.has("oven"), "two quick turbo bakes overheat the oven");
   const ovenActions = shift.stationActions("oven");
-  assert(ovenActions.length === 1 && ovenActions[0].id === "cool", "a jammed station only offers Cool it down");
+  assert(ovenActions.some(action => action.id === "cool" && action.enabled) && ovenActions.filter(action => ["bake", "turbo"].includes(action.id)).every(action => !action.enabled), "jammed oven allows cooling but blocks new baking");
   shift.tick(1.5);
   const waves = events.filter((event) => event.type === "heatWave").map((event) => event.station);
   assert(waves.includes("frostingCounter"), "the oven's heat spreads to the frosting station");
@@ -296,6 +299,34 @@ for (const topping of ["candle", "heart"]) {
   shift.state.oven[0].item.stage = "burnt";
   shift.tick(1);
   assert(shift.state.hands[0].id === 51, "pickup does not switch racks when the selected cupcake burns");
+}
+
+// Batched batter and oven actions keep distinct cupcakes and start together.
+for (const count of [2, 4]) {
+  const { shift } = makeShift({ upgrades: count === 4 ? { tray: 1, ovenRack: 2 } : {} });
+  assert(!shift.perform("cafeTable", "flavor:vanilla", { count: count + 1 }), "reject an oversized batch");
+  assert(shift.perform("cafeTable", "flavor:vanilla", { count }), "accept a batch that fits");
+  shift.tick(1);
+  assert(shift.state.hands.length === count, `create ${count} cupcakes`);
+  assert(new Set(shift.state.hands.map(item => item.id)).size === count, "batch has unique item IDs");
+  run(shift, "oven", "bake");
+  assert(shift.state.hands.length === 0, "batch frees the hands");
+  assert(shift.state.oven.filter(Boolean).length === count, "batch fills available racks");
+  assert(new Set(shift.state.oven.filter(Boolean).map(slot => slot.startedAt)).size === 1, "batch bakes simultaneously");
+  shift.tick(shift.state.bakeTime);
+  run(shift, "oven", "takeAll");
+  assert(shift.state.hands.length === count && shift.state.hands.every(item => item.stage === "baked"), "collect the baked batch");
+}
+
+// Overheating must never lock completed cupcakes inside the oven.
+{
+  const { shift } = makeShift();
+  shift.state.jammed.add("oven");
+  shift.state.heat.oven = 1;
+  shift.state.oven[0] = { item: { id: 91, flavor: "vanilla", stage: "baked" }, startedAt: 0, duration: 7 };
+  assert(shift.perform("oven", "takeOut"), "pickup is allowed from a jammed oven");
+  shift.tick(1);
+  assert(shift.state.hands[0].id === 91, "hot oven releases the ready cupcake");
 }
 
 console.log(`${passed} passed, ${failed} failed`);

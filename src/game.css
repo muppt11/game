@@ -498,3 +498,11 @@ body[data-palette="colorblind"] .station-activity-dialog .activity-package[data-
 body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart"] .cupcake-decoration,
 body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart"] .cupcake-decoration::before,
 body[data-palette="colorblind"] .station-activity-dialog [data-decoration="heart"] .cupcake-decoration::after { background: #cc79a7; }
+
+.batch-picker { display: flex; gap: 8px; margin: 8px 0 12px; padding: 8px; border: 1px solid #6f4436; }
+.batch-picker legend, .batch-note { font-size: calc(11px * var(--text-scale)); }
+.batch-picker button { min-width: 36px; min-height: 36px; border: 2px solid #6f4436; background: #fff8e8; cursor: pointer; }
+.batch-picker button[aria-pressed="true"] { background: #f0c96b; box-shadow: inset 0 -4px #6f4436; }
+.oven-rescue { width: 100%; padding: 10px; border: 2px solid #3d2929; background: #f0c96b; color: #3d2929; cursor: pointer; font-weight: bold; }
+.oven-rescue[hidden] { display: none; }
+body[data-palette="colorblind"] .batch-picker button[aria-pressed="true"] { background: #56b4e9; }

@@ -161,9 +161,10 @@ const screens = createScreens({
 const activities = createStationActivities({
   host: shell,
   sound: playSound,
-  onCommit: (stationId, actionId, nextStation) => {
+  onNavigate: (stationId) => scene.walkTo(stationId),
+  onCommit: (stationId, actionId, nextStation, options) => {
     if (phase !== "shift" || !shift) return;
-    if (shift.perform(stationId, actionId)) {
+    if (shift.perform(stationId, actionId, options)) {
       panel.refresh(shift);
       if (nextStation) scene.walkTo(nextStation);
       return true;
@@ -394,6 +395,7 @@ function gameFrame(dt) {
   if (!shift || phase !== "shift") return;
   activities.update();
   coach.frame();
+  coach.setObscured(Boolean(panel.stationId) || activities.active);
   hud.update({ shift, dayLabel: shiftLabel(), playerLabel: run.mode === "vs" ? run.name : "", goal: dayConfig(run).goal });
   renderOrders(orderRail, shift, shift.state.discovered);
   panel.refresh(shift);

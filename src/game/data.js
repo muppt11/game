@@ -107,7 +107,7 @@ export const UPGRADES = [
   { id: "ovenRack", name: "Extra Oven Rack", desc: "Bake one more cupcake at a time.", costs: [70, 140] },
   { id: "hotOven", name: "Hotter Oven", desc: "Cupcakes bake faster.", costs: [50, 110] },
   { id: "skates", name: "Roller Skates", desc: "Walk 35% faster.", costs: [40] },
-  { id: "tray", name: "Serving Tray", desc: "Carry two cupcakes at once.", costs: [70] },
+  { id: "tray", name: "Serving Tray", desc: "Carry four cupcakes at once (instead of two).", costs: [70] },
   { id: "fans", name: "Cooling Fans", desc: "Stations cool down twice as fast.", costs: [45] },
   { id: "chainSaver", name: "Streak Saver", desc: "Once per day, a lost customer won't break your streak.", costs: [80] },
   { id: "tipJar", name: "Tip Jar", desc: "+20% coins from every order.", costs: [60] },
