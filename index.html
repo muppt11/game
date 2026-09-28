@@ -4,144 +4,79 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f8edd8" />
-    <meta name="description" content="Tanvi's Cupcake Rush: a cozy cooking game. Bake to order, build streaks of happy customers, discover secret flavor combos, and don't let one overheated oven set off a chain reaction. Made for the Chain Reaction! game jam." />
+    <meta name="description" content="Chain Reaction Bakery: one cupcake order sets off a chain reaction through eight bakery stations. Made for the Chain Reaction! game jam." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3' y='9' width='10' height='6' fill='%23fff4e2' stroke='%233d2929'/%3E%3Crect x='2' y='5' width='12' height='5' fill='%23e98f9d' stroke='%233d2929'/%3E%3Crect x='7' y='2' width='3' height='3' fill='%23ad4d4b'/%3E%3C/svg%3E" />
-    <title>Tanvi's Cupcake Rush</title>
+    <title>Chain Reaction Bakery</title>
   </head>
   <body>
-    <main id="game-shell" aria-label="Tanvi's Cupcake Rush">
-      <canvas id="game-canvas" role="img" aria-label="The bakery kitchen. Click a station to walk there, or use the optional keyboard shortcuts."></canvas>
-      <audio id="background-music" loop preload="auto" playsinline></audio>
+    <main id="game-shell" aria-label="Chain Reaction Bakery game">
+      <canvas id="game-canvas"></canvas>
+      <audio id="background-music" autoplay loop preload="auto" playsinline></audio>
+      <div class="interface-tour-shade" id="interface-tour-shade" aria-hidden="true" hidden></div>
 
-      <section class="welcome-panel" id="welcome-panel" aria-labelledby="welcome-title">
-        <p class="eyebrow">A cozy cupcake cooking game</p>
-        <h1 id="welcome-title">Welcome to<br /><span>Tanvi's Cupcake Rush</span></h1>
-        <p class="welcome-copy">
-          Run a tiny bakery for five hectic days. Bake cupcakes to order, keep a streak of happy
-          customers going for huge multipliers, and hunt for secret flavor combos - but push the oven
-          too hard and the heat spreads through the whole kitchen.
-        </p>
-        <div class="how-to-play">
-          <button class="pixel-cursor" id="how-to-button" type="button" aria-label="How to play">?</button>
-          <span class="how-to-copy">
-            <span class="instruction-line"><strong>Controls:</strong><span>Just click! Keyboard shortcuts are optional.</span></span>
-            <span class="instruction-line"><strong>Best score:</strong><span id="welcome-best">No runs yet</span></span>
-          </span>
-        </div>
-        <button class="customize-button" id="customize-button" type="button">Customize your baker</button>
-        <button class="start-button" id="solo-button" type="button">Start a 5-Day Run <span class="start-arrow" aria-hidden="true">→</span></button>
-        <button class="start-button start-button-alt" id="vs-button" type="button">Bake-Off · 2 Players <span class="start-arrow" aria-hidden="true">⚔</span></button>
-        <p class="panel-note">Made by Tanvi for the Chain Reaction! game jam.</p>
-      </section>
-
-      <!-- In-shift HUD, laid out in the canvas's 960x540 coordinates and scaled with it. -->
-      <div class="shift-layer" id="shift-layer" hidden>
-        <header class="shift-topbar">
-          <section class="shift-hud" aria-label="Shift status">
-            <p class="hud-kicker"><span id="hud-day">Day 1</span><span id="hud-player"></span></p>
-            <div class="hud-timer"><span class="hud-timer-fill" id="hud-timer-fill"></span><span class="hud-timer-text" id="hud-timer-text">1:30</span></div>
-            <dl class="hud-stats">
-              <div><dt>Coins</dt><dd><span id="hud-coins">0</span><small id="hud-goal"></small></dd></div>
-              <div><dt>Score</dt><dd id="hud-score">0</dd></div>
-            </dl>
-            <div class="goal-bar" id="goal-bar" role="progressbar" aria-label="Coins toward today's goal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="goal-bar-fill"></span></div>
-          </section>
-          <section class="chain-meter" id="chain-meter" aria-label="Streak multiplier">
-            <p class="hud-kicker">Streak</p>
-            <strong id="chain-mult">×1</strong>
-            <span class="chain-pips" id="chain-pips" aria-hidden="true"></span>
-            <span class="chain-count" id="chain-count">0 in a row</span>
-          </section>
-          <ol class="order-rail" id="order-rail" aria-label="Customer orders"></ol>
-        </header>
-        <div class="station-panel" id="station-panel" role="group" aria-labelledby="station-panel-title" hidden>
-          <p class="station-panel-kicker" id="station-panel-kicker"></p>
-          <h3 id="station-panel-title"></h3>
-          <p class="station-panel-status" id="station-panel-status"></p>
-          <div class="station-actions" id="station-actions"></div>
-        </div>
-        <div class="held-strip" id="held-strip">
-          <span class="held-label">Holding</span>
-          <span class="held-text" id="held-text">Nothing</span>
-          <ol class="recipe-progress" id="recipe-progress" aria-label="Recipe progress for this cupcake"></ol>
-          <span class="held-hint" id="held-hint"></span>
-        </div>
-        <div class="coach-bubble" id="coach-bubble" hidden>
-          <p class="coach-kicker" id="coach-kicker"></p>
-          <p class="coach-text" id="coach-text"></p>
-          <div class="coach-actions">
-            <button type="button" id="coach-ok">Got it</button>
-            <button type="button" id="coach-skip">Skip tutorial</button>
-          </div>
-        </div>
-        <div class="shift-banner" id="shift-banner" aria-hidden="true" hidden></div>
-      </div>
-
-      <div class="visually-hidden" id="status-live" role="status" aria-live="polite"></div>
-
-      <div class="hud-dock" id="hud-dock">
-        <button class="pause-button" id="pause-button" type="button" hidden>❚❚ Pause</button>
-        <div class="a11y-controls" role="group" aria-label="Accessibility controls">
-          <button id="text-size-toggle" type="button">Font size 100%</button>
-          <button id="palette-toggle" type="button" aria-pressed="false">Colors: Standard</button>
-          <button id="narrator-toggle" type="button" aria-pressed="false" hidden>🔇 Narrator</button>
-        </div>
-        <div class="sound-controls" aria-label="Background music controls">
-          <button id="volume-down" type="button" aria-label="Decrease music volume">−</button>
-          <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-expanded="false" aria-label="Show music controls">♫ 25%</button>
-          <button id="volume-up" type="button" aria-label="Increase music volume">+</button>
-        </div>
-      </div>
-
-      <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
-
-      <dialog class="game-dialog" id="game-dialog" aria-labelledby="game-dialog-title">
-        <div class="dialog-paper game-paper" id="game-paper">
-          <p class="dialog-kicker" id="game-dialog-kicker"></p>
-          <h2 id="game-dialog-title"></h2>
-          <div class="game-dialog-body" id="game-dialog-body"></div>
-          <div class="game-dialog-actions" id="game-dialog-actions"></div>
+      <dialog class="objective-dialog sound-notice-dialog" id="sound-notice-dialog" aria-labelledby="sound-notice-title">
+        <div class="objective-paper sound-notice-paper">
+          <button class="dialog-close" id="sound-notice-close" type="button" aria-label="Close sound reminder">×</button>
+          <p class="dialog-kicker">SOUND ON</p>
+          <h2 id="sound-notice-title">Turn your<br />volume up!</h2>
+          <p>This bakery is best enjoyed with music and sound effects.</p>
         </div>
       </dialog>
 
-      <dialog class="game-dialog how-to-dialog" id="how-to-dialog" aria-labelledby="how-to-title">
-        <div class="dialog-paper game-paper is-wide">
-          <button class="dialog-close" type="button" data-close aria-label="Close how to play">×</button>
-          <p class="dialog-kicker">HOW TO PLAY</p>
-          <h2 id="how-to-title">Run the bakery</h2>
-          <div class="how-to-grid">
-            <section>
-              <h3>Make a cupcake</h3>
-              <p>Click a station to walk there, then click what to do. The keys shown are <strong>optional</strong> shortcuts.</p>
-              <ol class="how-to-steps">
-                <li><kbd>Q</kbd> <strong>Ingredients</strong> - pick a batter flavor</li>
-                <li><kbd>W</kbd> <strong>Oven</strong> - bake it, then take it out before it burns</li>
-                <li><kbd>E</kbd> <strong>Frosting</strong> - frost it</li>
-                <li><kbd>R</kbd> <strong>Toppings</strong> - add a topping (or leave it plain)</li>
-                <li><kbd>F</kbd> <strong>Packaging</strong> - box it for 🎁 to-go orders</li>
-                <li><kbd>D</kbd> <strong>Serving</strong> - hand it to the customer</li>
-              </ol>
-              <p>Optional shortcuts: at a station, <kbd>1</kbd>-<kbd>9</kbd> picks an action. <kbd>Esc</kbd> pauses.</p>
-            </section>
-            <section>
-              <h3>Streaks</h3>
-              <p>Serve customers back to back to build a <strong>streak</strong>. Every 3 in a row raises your score multiplier and gives a <strong>streak bonus</strong>: extra points, and every waiting customer cheers up.</p>
-              <p>If a customer runs out of patience and leaves, the streak breaks.</p>
-              <h3>Secret combos</h3>
-              <p>Some flavor + frosting + topping combinations are secret recipes worth much more. Find them yourself, or check the Recipe Book station for hints. "Surprise me!" customers take anything, so they're your chance to experiment.</p>
-            </section>
-            <section>
-              <h3>Heat</h3>
-              <p>Every station heats up as you use it - especially <strong>Turbo bake</strong>. When a station overheats (<span class="heat-chip">✕</span>) it jams, and the heat sets off a chain reaction down the line to the next stations. Cool a station by walking to it and clicking <strong>Cool it down</strong>.</p>
-              <button class="default-button" id="how-to-lab" type="button">⚡ Try the Heat Lab</button>
-              <h3>Days and the shop</h3>
-              <p>Earn each day's coin goal to open again tomorrow. Spend coins on upgrades and new ingredients between days. Survive all five days to win.</p>
-              <h3>Bake-Off</h3>
-              <p>Two players take turns: same budget, same customers. Highest score wins.</p>
-            </section>
+      <section class="welcome-panel" id="welcome-panel" aria-labelledby="welcome-title">
+        <button class="panel-stamp" id="open-guide" type="button" aria-label="Open the bakery welcome guide">OPEN</button>
+        <p class="eyebrow">A game jam game · Theme: Chain Reaction!</p>
+        <h1 id="welcome-title">Welcome to the<br /><span>Chain Reaction Bakery</span></h1>
+        <p class="welcome-copy">
+          One cupcake order sets off a chain reaction: every station's output powers the next.
+          Keep the chain going from the first egg to the final customer - then break it on purpose
+          in the Chain Reaction Lab and watch the damage cascade.
+        </p>
+        <div class="how-to-play">
+          <button class="pixel-cursor" id="objective-help" type="button" aria-label="Learn how the game works">+</button>
+          <span class="how-to-copy">
+            <span class="instruction-line"><strong>Directions:</strong><span>Click or tap to move</span></span>
+            <span class="instruction-line"><strong>Objective:</strong><span>Keep the chain reaction going through all 8 stations.</span></span>
+          </span>
+        </div>
+        <button class="customize-button" id="customize-button" type="button">Customize character</button>
+        <button class="start-button" id="start-button" type="button">Enter the bakery <span class="start-arrow" aria-hidden="true">→</span></button>
+        <p class="panel-note">Made by Tanvi for the Chain Reaction! game jam. One small spark, eight stations, one big reaction :)</p>
+      </section>
+
+      <dialog class="objective-dialog" id="objective-dialog" aria-labelledby="objective-title">
+        <div class="objective-paper">
+          <button class="dialog-close" id="objective-close" type="button" aria-label="Close instructions">×</button>
+          <p class="dialog-kicker">HOW IT WORKS</p>
+          <h2 id="objective-title">Keep the Chain Going</h2>
+          <p>Each station sets off the next: ingredients start the batter, the batter fills the tray, the oven triggers frosting, and so on to the customer. Finish the chain, then trigger a meltdown in the Chain Reaction Lab.</p>
+        </div>
+      </dialog>
+
+      <dialog class="objective-dialog" id="open-guide-dialog" aria-labelledby="open-guide-title">
+        <div class="objective-paper open-guide-paper">
+          <button class="dialog-close" type="button" aria-label="Close welcome guide">×</button>
+          <p class="dialog-kicker">WELCOME IN</p>
+          <h2 id="open-guide-title">Ready to start the reaction?</h2>
+          <p>Customize your character, then press Enter the Bakery to set off the first link in the chain.</p>
+          <div class="open-guide-actions">
+            <button class="customize-button" id="open-guide-customize" type="button">Customize character</button>
+            <button class="start-button" id="open-guide-enter" type="button">Enter the bakery <span class="start-arrow" aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="objective-dialog entry-choice-dialog" id="entry-choice-dialog" aria-labelledby="entry-choice-title">
+        <div class="objective-paper entry-choice-paper">
+          <p class="dialog-kicker">CHOOSE YOUR ROUTE</p>
+          <h2 id="entry-choice-title">How do you want to play?</h2>
+          <p>Bake the full chain station by station, or jump straight into the Chain Reaction Lab and set off a cascade.</p>
+          <div class="entry-choice-actions">
+            <a class="default-button" href="./rush.html">Play timed Cupcake Rush</a>
+            <button class="start-button" id="play-game-choice" type="button">Bake the Chain</button>
+            <button class="default-button" id="quick-links-choice" type="button">⚡ Jump to the Lab</button>
           </div>
         </div>
       </dialog>
@@ -149,8 +84,8 @@
       <dialog class="character-dialog" id="character-dialog" aria-labelledby="character-title">
         <div class="character-paper">
           <button class="dialog-close" id="character-close" type="button" aria-label="Close character customization">×</button>
-          <p class="dialog-kicker">YOUR BAKER</p>
-          <h2 id="character-title">Make a tiny baker</h2>
+          <p class="dialog-kicker">BAKERY AVATAR</p>
+          <h2 id="character-title">Make a tiny character</h2>
           <div class="avatar-preview" id="avatar-preview" aria-label="Pixel character preview">
             <span class="avatar-hair"></span><span class="avatar-face"><i class="avatar-eye eye-left"></i><i class="avatar-eye eye-right"></i></span><span class="avatar-body"></span>
           </div>
@@ -160,26 +95,123 @@
           <div class="character-options" id="character-options"></div>
           <div class="character-actions">
             <button class="default-button" id="default-character" type="button">Use Default</button>
-            <button class="continue-button" id="save-character" type="button">Use This Baker <span aria-hidden="true">→</span></button>
+            <button class="continue-button" id="save-character" type="button">Use This Character <span aria-hidden="true">→</span></button>
           </div>
         </div>
       </dialog>
 
+      <nav class="quick-nav" aria-label="Game navigation">
+        <button class="home-button" id="home-button" type="button">Home</button>
+      </nav>
+
+      <div class="quick-links-guide" id="quick-links-guide" hidden>
+        <span class="quick-links-pointer" aria-hidden="true"></span>
+        <aside class="quick-links-tip" aria-labelledby="quick-links-tip-title">
+          <button id="quick-links-guide-close" type="button" aria-label="Close quick links guide">×</button>
+          <strong id="quick-links-tip-title">Home</strong>
+          <p>Head back to the welcome screen anytime.</p>
+          <button class="quick-links-got-it" id="quick-links-got-it" type="button">Got It</button>
+        </aside>
+      </div>
+
+      <section class="quest-card" id="quest-panel" aria-live="polite">
+        <div class="quest-card-heading">
+          <p class="quest-kicker">Chain reaction</p>
+          <span class="quest-count" id="quest-count">Step 1 of 8</span>
+        </div>
+        <strong id="quest-step">Gather the Ingredients</strong>
+        <span class="quest-reward" id="quest-reward">Sets off: Batter</span>
+        <span class="quest-instruction" id="quest-detail">Visit the ingredients station.</span>
+        <div class="quest-card-footer">
+          <div class="quest-progress" id="quest-progress" aria-label="Cupcake progress"></div>
+          <button class="quit-game-button" id="quit-game-button" type="button">← Quit Game</button>
+        </div>
+        <aside class="quit-game-guide" id="quit-game-guide" role="dialog" aria-labelledby="quit-game-guide-title" hidden>
+          <span class="quit-game-guide-arrow" aria-hidden="true">&uarr;</span>
+          <strong id="quit-game-guide-title">Leave anytime</strong>
+          <p>You can always click Quit Game to return to the home screen.</p>
+          <button id="interface-tour-done" type="button">Start Game</button>
+        </aside>
+      </section>
+
+      <div class="tracker-stack">
+        <button class="tracker-toggle" id="tracker-toggle" type="button" aria-expanded="false" aria-controls="tracker-panel">Recipe Progress <span id="tracker-count">1/8</span></button>
+
+        <aside class="tracker-panel" id="tracker-panel" aria-label="Cupcake quest progress">
+          <div class="tracker-heading">
+            <div><p class="quest-kicker">Bakery order ticket</p><strong>Recipe progress</strong></div>
+            <button class="icon-button" id="tracker-close" type="button" aria-label="Close recipe progress">×</button>
+          </div>
+          <div class="assembly-close-guide" id="assembly-close-guide" role="status" hidden>
+            <span class="assembly-guide-cursor" aria-hidden="true"></span>
+            <strong>Assembly complete!</strong>
+            <span>Click the × to close Recipe Progress, then choose Baking.</span>
+          </div>
+          <div class="tracker-list" id="tracker-list"></div>
+          <button class="reset-button" id="reset-button" type="button">Replay from Start</button>
+        </aside>
+
+        <div class="edit-cupcake-area">
+          <button class="edit-cupcake-button" id="edit-cupcake-button" type="button">
+            <strong>Edit Cupcake</strong>
+            <span id="cupcake-summary-compact"></span>
+          </button>
+          <aside class="interface-guide edit-cupcake-guide" id="edit-cupcake-guide" role="dialog" aria-labelledby="edit-cupcake-guide-title" hidden>
+            <span class="interface-guide-arrow" aria-hidden="true">&rarr;</span>
+            <strong id="edit-cupcake-guide-title">Remember!</strong>
+            <p>You can change your cupcake design anytime by clicking Edit Cupcake.</p>
+            <button id="edit-cupcake-guide-done" type="button">Got It</button>
+          </aside>
+        </div>
+
+        <div class="hud-controls-row">
+          <div class="a11y-controls" role="group" aria-label="Accessibility controls">
+            <button id="text-size-toggle" type="button" aria-label="Font size 100%. Change to 115%.">Font size 100%</button>
+            <button id="narrator-toggle" type="button" aria-pressed="false" hidden>🔇 Narrator</button>
+          </div>
+          <div class="sound-controls" aria-label="Background music controls">
+            <button id="volume-down" type="button" aria-label="Decrease music volume">−</button>
+            <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-expanded="false" aria-label="Show music controls">♫ 25%</button>
+            <button id="volume-up" type="button" aria-label="Increase music volume">+</button>
+          </div>
+        </div>
+
+        <aside class="interface-guide sound-controls-guide" id="sound-controls-guide" role="dialog" aria-labelledby="sound-controls-guide-title" hidden>
+          <span class="interface-guide-arrow" aria-hidden="true">&rarr;</span>
+          <strong id="sound-controls-guide-title">Adjust the sound</strong>
+          <p>Click the music button anytime to change the volume or mute the bakery.</p>
+          <button id="sound-guide-next" type="button">Next</button>
+        </aside>
+
+        <aside class="interface-guide recipe-progress-guide" id="recipe-progress-guide" role="dialog" aria-labelledby="recipe-progress-guide-title" hidden>
+          <span class="interface-guide-arrow" aria-hidden="true">&rarr;</span>
+          <strong id="recipe-progress-guide-title">Recipe Progress</strong>
+          <p>This tracks every bakery step. You can close it anytime with the × button.</p>
+          <button id="recipe-guide-done" type="button">Next</button>
+        </aside>
+
+      </div>
+
+      <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+
+      <button class="chain-lab-button" id="chain-lab-button" type="button">⚡ Chain Reaction Lab</button>
+
       <dialog class="recipe-dialog chain-lab-dialog" id="chain-lab-dialog" aria-labelledby="chain-lab-title">
         <div class="dialog-paper chain-lab-paper">
-          <button class="dialog-close" id="chain-lab-close" type="button" aria-label="Close the Heat Lab">×</button>
-          <p class="dialog-kicker">HEAT LAB</p>
-          <h2 id="chain-lab-title">How heat spreads</h2>
+          <button class="dialog-close" id="chain-lab-close" type="button" aria-label="Close Chain Reaction Lab">×</button>
+          <p class="dialog-kicker">CHAIN REACTION LAB</p>
+          <h2 id="chain-lab-title">Trigger a shock</h2>
           <p class="dialog-content">
-            This is your kitchen's heat map. Shock a station and watch the heat cascade down the line, exactly
-            like an overheated station does mid-shift. The model is <strong>DebtRank</strong>, the algorithm used to
-            measure how distress spreads through financial networks.
+            The bakery is a pipeline: Ingredients feed Batter feed Assembly feed the Oven, which
+            fans out to Frosting and Packaging, on to Decorating and Serving. Shock a station and watch
+            the reaction cascade downstream through the dependency graph, modeled after
+            <strong>DebtRank</strong>, the algorithm used to measure contagion risk in financial networks.
           </p>
           <div class="chain-lab-stage">
-            <canvas id="chain-lab-canvas" width="580" height="280" role="img" aria-label="Kitchen heat graph. Click a station, or use the station buttons below, to trigger a shock."></canvas>
+            <canvas id="chain-lab-canvas" width="580" height="280" role="img" aria-label="Bakery dependency graph. Click a station, or use the station buttons below, to trigger a shock."></canvas>
             <div class="chain-lab-gameover" id="chain-lab-gameover" role="alertdialog" aria-labelledby="chain-lab-gameover-title" hidden>
               <p class="dialog-kicker">GAME OVER</p>
-              <strong id="chain-lab-gameover-title">Kitchen Meltdown</strong>
+              <strong id="chain-lab-gameover-title">System Collapse</strong>
               <p id="chain-lab-gameover-detail"></p>
               <button class="start-button" id="chain-lab-play-again" type="button">Play Again</button>
             </div>
@@ -191,11 +223,253 @@
             <span id="chain-lab-log" aria-live="polite">Click any station to begin.</span>
           </div>
           <div class="chain-lab-controls">
-            <label class="chain-lab-toggle"><input type="checkbox" id="chain-lab-endless" /> Endless mode</label>
-            <button class="default-button" id="chain-lab-reset" type="button">Reset Lab</button>
+            <label class="chain-lab-toggle">
+              <input type="checkbox" id="chain-lab-endless" />
+              Endless mode
+            </label>
+            <label class="chain-lab-toggle">
+              <input type="checkbox" id="chain-lab-colorblind" />
+              Colorblind-safe palette
+            </label>
+            <button class="default-button" id="chain-lab-reset" type="button">Reset Simulation</button>
           </div>
         </div>
       </dialog>
+
+      <dialog class="recipe-dialog cupcake-editor-dialog" id="cupcake-editor-dialog" aria-labelledby="cupcake-editor-title">
+        <div class="dialog-paper cupcake-editor-paper">
+          <button class="dialog-close" type="button" aria-label="Close cupcake editor">×</button>
+          <p class="dialog-kicker">YOUR CUPCAKE</p>
+          <h2 id="cupcake-editor-title">Edit Cupcake</h2>
+          <p class="cupcake-editor-summary" id="cupcake-editor-summary"></p>
+          <div class="cupcake-placeholder editor-cupcake" id="editor-cupcake-preview" data-decoration="none" aria-label="Cupcake preview">
+            <span class="cupcake-wrapper"></span><span class="cupcake-top"></span><span class="frosting-swirl swirl-one is-visible"></span><span class="frosting-swirl swirl-two is-visible"></span><span class="frosting-swirl swirl-three is-visible"></span><span class="cupcake-decoration" aria-hidden="true"></span>
+          </div>
+          <div class="cupcake-editor-grid">
+            <fieldset class="cupcake-editor-group">
+              <legend>Batter</legend>
+              <div>
+                <button type="button" data-batter-flavor="chocolate"><span class="batter-swatch batter-chocolate" aria-hidden="true"></span>Chocolate</button>
+                <button type="button" data-batter-flavor="vanilla"><span class="batter-swatch batter-vanilla" aria-hidden="true"></span>Vanilla</button>
+                <button type="button" data-batter-flavor="strawberry"><span class="batter-swatch batter-strawberry" aria-hidden="true"></span>Strawberry</button>
+              </div>
+            </fieldset>
+            <fieldset class="cupcake-editor-group">
+              <legend>Frosting</legend>
+              <div>
+                <button type="button" data-frosting-flavor="chocolate"><span class="flavor-swatch flavor-chocolate" aria-hidden="true"></span>Chocolate</button>
+                <button type="button" data-frosting-flavor="vanilla"><span class="flavor-swatch flavor-vanilla" aria-hidden="true"></span>Vanilla</button>
+                <button type="button" data-frosting-flavor="strawberry"><span class="flavor-swatch flavor-strawberry" aria-hidden="true"></span>Strawberry</button>
+              </div>
+            </fieldset>
+            <fieldset class="cupcake-editor-group">
+              <legend>Decoration</legend>
+              <div id="editor-decoration-options">
+                <button type="button" data-decoration="cherry">Cherry</button>
+                <button type="button" data-decoration="candle">Candle</button>
+                <button type="button" data-decoration="heart">Heart</button>
+              </div>
+            </fieldset>
+            <fieldset class="cupcake-editor-group">
+              <legend>Ribbon</legend>
+              <div>
+                <button type="button" data-bow-color="berry"><span class="bow-swatch bow-berry" aria-hidden="true"></span>Berry</button>
+                <button type="button" data-bow-color="sage"><span class="bow-swatch bow-sage" aria-hidden="true"></span>Sage</button>
+                <button type="button" data-bow-color="gold"><span class="bow-swatch bow-gold" aria-hidden="true"></span>Gold</button>
+              </div>
+            </fieldset>
+          </div>
+          <button class="continue-button cupcake-editor-done" id="cupcake-editor-done" type="button">Save Choices</button>
+        </div>
+      </dialog>
+
+      <dialog class="recipe-dialog" id="recipe-dialog" aria-labelledby="recipe-title">
+        <div class="dialog-paper">
+          <button class="dialog-close" id="dialog-close" type="button" aria-label="Close recipe card">×</button>
+          <p class="dialog-kicker" id="recipe-step-number">STEP 1</p>
+          <h2 id="recipe-title">Gather the Ingredients</h2>
+          <p class="dialog-section" id="recipe-section">Sets off: Batter</p>
+          <p class="dialog-message" id="recipe-message"></p>
+          <p class="dialog-content" id="recipe-content"></p>
+          <div class="ingredients-interaction" id="ingredients-interaction" hidden>
+            <p class="interaction-instruction">Tap each ingredient to see what it sets off down the line.</p>
+            <div class="ingredient-grid" id="ingredient-grid"></div>
+            <p class="ingredient-feedback" id="ingredient-feedback" aria-live="polite">4 ingredients remain.</p>
+          </div>
+          <div class="batter-interaction" id="batter-interaction" hidden>
+            <p class="interaction-instruction">Click each ingredient to add it to the bowl. Then stir the batter once.</p>
+            <div class="batter-workspace">
+              <div class="batter-ingredients" id="batter-ingredients"></div>
+              <div class="mixing-bowl" id="mixing-bowl" tabindex="0" aria-label="Batter bowl drop zone"><span class="bowl-fill"></span><span class="batter-pixel batter-pixel-egg"></span><span class="batter-pixel batter-pixel-butter"></span><span class="batter-pixel batter-pixel-flour"></span><span class="batter-pixel batter-pixel-sugar"></span><span class="spoon-tool" id="whisk-tool" aria-hidden="true"></span><span class="bowl-rim"></span></div>
+            </div>
+            <p class="batter-feedback" id="batter-feedback" aria-live="polite">4 ingredients to add.</p>
+            <button class="whisk-button" id="whisk-button" type="button" disabled><span class="whisk-icon" aria-hidden="true">◡</span> Stir the Batter</button>
+          </div>
+          <div class="tray-interaction" id="tray-interaction" hidden>
+            <p class="interaction-instruction">Choose a batter flavor, then dispense batter into all four project cups.</p>
+            <fieldset class="batter-flavor-picker">
+              <legend>Pick a batter flavor</legend>
+              <div>
+                <button type="button" data-batter-flavor="chocolate" aria-pressed="false"><span class="batter-swatch batter-chocolate" aria-hidden="true"></span>Chocolate</button>
+                <button type="button" data-batter-flavor="vanilla" aria-pressed="false"><span class="batter-swatch batter-vanilla" aria-hidden="true"></span>Vanilla</button>
+                <button type="button" data-batter-flavor="strawberry" aria-pressed="false"><span class="batter-swatch batter-strawberry" aria-hidden="true"></span>Strawberry</button>
+              </div>
+            </fieldset>
+            <div class="tray-workspace">
+              <div class="tray-reminder" id="tray-reminder" role="status" hidden></div>
+              <button class="batter-dispenser" id="batter-dispenser" type="button" aria-label="Dispense batter into the next project cup">
+                <span class="dispenser-tank" aria-hidden="true"></span><span class="dispenser-nozzle" aria-hidden="true"></span><span class="dispenser-click-cue" aria-hidden="true"></span><strong>Dispense</strong>
+              </button>
+              <div class="project-tray" id="project-tray" aria-label="Cupcake tray with four project cups">
+                <span class="tray-cup" data-tray-cup="1"></span><span class="tray-cup" data-tray-cup="2"></span><span class="tray-cup" data-tray-cup="3"></span><span class="tray-cup" data-tray-cup="4"></span>
+              </div>
+            </div>
+            <p class="tray-feedback" id="tray-feedback" aria-live="polite">4 project cups to fill.</p>
+          </div>
+          <div class="baking-interaction" id="baking-interaction" hidden>
+            <p class="interaction-instruction">Drag the tray into the oven or click the button. Let the cupcakes bake, then take them out.</p>
+            <div class="baking-workspace" id="baking-workspace">
+              <div class="activity-oven" id="activity-oven" aria-label="Bakery oven drop area">
+                <span class="oven-control control-one"></span><span class="oven-control control-two"></span>
+                <span class="oven-window"></span><span class="oven-rack"></span>
+              </div>
+              <div class="oven-tray" id="oven-tray" role="button" tabindex="0" aria-label="Tray of four project cupcakes. Drag into the oven or press Enter.">
+                <span class="oven-cup"></span><span class="oven-cup"></span><span class="oven-cup"></span><span class="oven-cup"></span>
+              </div>
+            </div>
+            <div class="bake-progress" aria-label="Baking progress"><span></span></div>
+            <p class="baking-feedback" id="baking-feedback" aria-live="polite">Drag the filled tray into the oven or use the button.</p>
+            <button class="oven-action-button" id="oven-action-button" type="button">Put Tray in Oven</button>
+          </div>
+          <div class="decorating-interaction" id="decorating-interaction" hidden>
+            <p class="interaction-instruction">Choose one finishing touch for your saved cupcake.</p>
+            <div class="cupcake-placeholder decorating-cupcake" id="decorating-cupcake" data-decoration="none" aria-label="Your decorated cupcake preview">
+              <span class="cupcake-wrapper"></span><span class="cupcake-top"></span><span class="frosting-swirl swirl-one is-visible"></span><span class="frosting-swirl swirl-two is-visible"></span><span class="frosting-swirl swirl-three is-visible"></span><span class="cupcake-decoration" aria-hidden="true"></span>
+            </div>
+            <div class="decoration-options" id="decoration-options">
+              <button type="button" data-decoration="cherry">Cherry</button>
+              <button type="button" data-decoration="candle">Candle</button>
+              <button type="button" data-decoration="heart">Heart topper</button>
+            </div>
+            <p class="decoration-feedback" id="decoration-feedback" aria-live="polite">Pick a decoration to continue.</p>
+          </div>
+          <div class="packaging-interaction" id="packaging-interaction" hidden>
+            <p class="interaction-instruction">Choose a ribbon, pack the four project cupcakes, and finish the bakery box with a bow.</p>
+            <fieldset class="bow-picker">
+              <legend>Pick a bow color</legend>
+              <div>
+                <button type="button" data-bow-color="berry" aria-pressed="false"><span class="bow-swatch bow-berry" aria-hidden="true"></span>Berry</button>
+                <button type="button" data-bow-color="sage" aria-pressed="false"><span class="bow-swatch bow-sage" aria-hidden="true"></span>Sage</button>
+                <button type="button" data-bow-color="gold" aria-pressed="false"><span class="bow-swatch bow-gold" aria-hidden="true"></span>Gold</button>
+              </div>
+            </fieldset>
+            <div class="package-scene" id="package-scene" aria-label="Bakery box with four project cupcakes">
+              <div class="package-box">
+                <div class="package-cupcakes" aria-hidden="true">
+                  <span><span class="package-frosting"><b></b><b></b><b></b></span><i></i></span>
+                  <span><span class="package-frosting"><b></b><b></b><b></b></span><i></i></span>
+                  <span><span class="package-frosting"><b></b><b></b><b></b></span><i></i></span>
+                  <span><span class="package-frosting"><b></b><b></b><b></b></span><i></i></span>
+                </div>
+                <span class="package-lid"></span><span class="package-ribbon ribbon-vertical"></span><span class="package-ribbon ribbon-horizontal"></span>
+                <span class="package-bow bow-left"></span><span class="package-bow bow-right"></span><span class="package-bow-knot"></span>
+              </div>
+              <div class="ribbon-preview" id="ribbon-preview" hidden>
+                <small>PREVIEW</small>
+                <span class="ribbon-preview-box"><i></i></span>
+              </div>
+            </div>
+            <p class="packaging-feedback" id="packaging-feedback" aria-live="polite">The cupcakes are ready to pack.</p>
+            <button class="package-action-button" id="package-action-button" type="button">Pack the Cupcakes</button>
+          </div>
+          <div class="serving-interaction" id="serving-interaction" hidden>
+            <p class="interaction-instruction">Send the finished project box down the bakery belt to the customer.</p>
+            <div class="serving-scene" id="serving-scene" aria-label="Bakery conveyor belt delivery">
+              <div class="customer-speech" id="customer-speech" aria-hidden="true">Thank you!</div>
+              <div class="serving-customer" aria-label="Pixel bakery customer">
+                <span class="customer-hair"></span><span class="customer-face"><i></i><i></i></span><span class="customer-body"></span>
+              </div>
+              <div class="serving-package" aria-label="Finished cupcake box">
+                <span class="serving-ribbon ribbon-v"></span><span class="serving-ribbon ribbon-h"></span>
+                <span class="serving-bow serving-bow-left"></span><span class="serving-bow serving-bow-right"></span><span class="serving-bow-knot"></span>
+              </div>
+              <div class="conveyor-belt" aria-hidden="true"><span class="belt-surface"></span><span class="belt-leg leg-left"></span><span class="belt-leg leg-right"></span></div>
+            </div>
+            <p class="serving-feedback" id="serving-feedback" aria-live="polite">The customer is waiting for their order.</p>
+            <button class="serve-action-button" id="serve-action-button" type="button">Send Order Down the Belt</button>
+          </div>
+          <div class="technology-tags" id="technology-tags"></div>
+          <a class="dialog-link" id="recipe-link" href="#" target="_blank" rel="noreferrer">Learn more</a>
+          <button class="continue-button" id="continue-button" type="button">Set Off Next Link <span aria-hidden="true">→</span></button>
+          <div class="finish-quest-reminder" id="finish-quest-reminder" role="status" hidden>
+            <button id="finish-quest-reminder-close" type="button" aria-label="Close reminder">×</button>
+            <strong>Almost finished!</strong>
+            <span>Click Finish the Chain to move on.</span>
+          </div>
+          <div class="step-navigation">
+            <button class="previous-step-button" id="previous-step-button" type="button"><span aria-hidden="true">←</span> Previous Step</button>
+            <button class="skip-button" id="skip-button" type="button">Skip Step <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="recipe-dialog frosting-dialog" id="frosting-dialog" aria-labelledby="frosting-title">
+        <div class="dialog-paper">
+          <button class="dialog-close" id="frosting-close" type="button" aria-label="Close frosting interaction">×</button>
+          <p class="dialog-kicker">STEP 5 · FROSTING</p>
+          <h2 id="frosting-title">Tap to Frost</h2>
+          <p class="dialog-content">Three swirls set off the decorating station.</p>
+          <fieldset class="frosting-picker">
+            <legend>Pick a frosting flavor</legend>
+            <div>
+              <button type="button" data-frosting-flavor="chocolate" aria-pressed="false"><span class="flavor-swatch flavor-chocolate" aria-hidden="true"></span>Chocolate</button>
+              <button class="is-selected" type="button" data-frosting-flavor="strawberry" aria-pressed="true"><span class="flavor-swatch flavor-strawberry" aria-hidden="true"></span>Strawberry</button>
+              <button type="button" data-frosting-flavor="vanilla" aria-pressed="false"><span class="flavor-swatch flavor-vanilla" aria-hidden="true"></span>Vanilla</button>
+            </div>
+            <button class="sprinkle-toggle" id="sprinkle-toggle" type="button" aria-pressed="false"><span aria-hidden="true">✦</span> Add sprinkles</button>
+          </fieldset>
+          <div class="cupcake-placeholder" id="cupcake-placeholder" aria-label="Unfrosted cupcake placeholder">
+            <span class="cupcake-wrapper"></span><span class="cupcake-top" id="cupcake-top"></span><span class="frosting-swirl swirl-one"></span><span class="frosting-swirl swirl-two"></span><span class="frosting-swirl swirl-three"></span>
+          </div>
+          <div class="frosting-meter" aria-label="Frosting progress"><span id="frosting-meter-fill"></span></div>
+          <p class="frosting-feedback" id="frosting-feedback">Ready for the first swirl?</p>
+          <button class="frost-button" id="frost-button" type="button">Tap to Frost</button>
+          <div class="step-navigation">
+            <button class="previous-step-button" id="previous-frosting-button" type="button"><span aria-hidden="true">←</span> Previous Step</button>
+            <button class="skip-button" id="skip-frosting-button" type="button">Skip Step <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="recipe-dialog completion-dialog" id="completion-dialog" aria-labelledby="completion-title">
+        <div class="confetti-layer completion-confetti-layer" id="completion-confetti-layer" aria-hidden="true"></div>
+        <div class="dialog-paper">
+          <p class="dialog-kicker">CHAIN COMPLETE</p>
+          <h2 id="completion-title">Chain Reaction Complete!</h2>
+          <p class="dialog-content">One order set off all eight stations, from the first egg to a happy customer. Now see what happens when a link breaks: shock a station in the Chain Reaction Lab and watch the damage cascade.</p>
+          <button class="start-button completion-lab-button" id="completion-lab" type="button">⚡ Open the Chain Reaction Lab</button>
+          <button class="continue-button" id="explore-button" type="button">Explore the Bakery</button>
+          <button class="reset-button completion-replay" id="completion-replay" type="button">Restart the Chain</button>
+        </div>
+      </dialog>
+
+      <dialog class="confirm-dialog" id="reset-dialog" aria-labelledby="reset-title">
+        <form method="dialog" class="confirm-paper">
+          <h2 id="reset-title">Reset the quest?</h2>
+          <p>Your saved cupcake progress will be cleared.</p>
+          <div><button value="cancel" type="submit">Keep Progress</button><button class="danger-button" id="confirm-reset" value="reset" type="submit">Reset Quest</button></div>
+        </form>
+      </dialog>
+
+      <dialog class="confirm-dialog" id="quit-dialog" aria-labelledby="quit-title">
+        <form method="dialog" class="confirm-paper">
+          <h2 id="quit-title">Quit the game?</h2>
+          <p>Your cupcake progress will be saved so you can continue later.</p>
+          <div><button id="cancel-quit" value="cancel" type="submit">Keep Playing</button><button class="danger-button" id="confirm-quit" value="quit" type="submit">Quit Game</button></div>
+        </form>
+      </dialog>
+
+      <div class="game-hint" id="game-hint" aria-live="polite">Directions: click or tap to move · Objective: keep the chain going</div>
     </main>
     <aside class="rotate-device" role="status" aria-label="Rotate your phone">
       <span class="rotate-phone-icon" aria-hidden="true"></span>
@@ -204,6 +478,6 @@
     </aside>
     <div class="cursor-sprinkle-layer" id="cursor-sprinkle-layer" aria-hidden="true"></div>
     <div class="custom-pixel-cursor" id="custom-pixel-cursor" aria-hidden="true"></div>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/classic/main.js"></script>
   </body>
 </html>
