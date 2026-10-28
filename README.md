@@ -32,6 +32,16 @@ Day 1 starts with a guided first order, and pop-up tips explain each new thing t
 - Optional voice narrator (Web Speech API)
 - Fully playable by mouse, touch, or keyboard; the game fits the screen with a 1200px maximum kitchen width and capped dialog sizing
 
+## Challenges
+
+**Making "heat" feel like a chain reaction.** For the Chain Reaction jam theme, overheated stations spread heat down the production line. I modeled it with DebtRank, an algorithm for contagion in financial networks, and kept it in its own tested module.
+
+**Hands on activities inside a timed game.** Mixing, dispensing, and frosting are mini activities, but the shift timer, ovens, and customers keep running. Getting cancel, back, and finish to always leave the game in a valid state took a lot of iteration.
+
+**Keeping the logic testable.** Game rules live in plain JavaScript (`shift.js`, `run.js`) separate from the Kaboom scene, so they run under Node tests without a browser.
+
+**Accessibility.** I added a colorblind safe palette (Okabe Ito) where status always has a symbol too, scalable text, keyboard play, and an optional voice narrator.
+
 ## Development
 
 ```bash
